@@ -82,7 +82,7 @@ struct gmp_header_struct
 struct submap_struct;
 struct subfile_struct {
 	struct subfile_header_struct *header;
-	unsigned long size;
+	unsigned int size;
 	char name[9];
 	char type[4];
 	struct submap_struct *map;
@@ -101,8 +101,8 @@ struct submap_struct {
 };
 
 int verbose = 1;
-uint8_t *img_base;
-unsigned long img_size;
+unsigned char *img_base;
+unsigned int img_size;
 struct subfile_struct *subfiles, *subfiles_tail;
 struct submap_struct *submaps, *submaps_tail;
 int subfile_num;
@@ -123,7 +123,7 @@ int map_img (const char *path)
 	if (fstat(img_fd, &sb) == -1)
 		return 1;
 	img_size = sb.st_size;
-	vlog("file size = %lu\n", img_size);
+	vlog("file size = %u\n", img_size);
 
 	img_base = mmap(NULL, img_size, PROT_READ, MAP_PRIVATE, img_fd, 0);
 	if (img_base == MAP_FAILED)
@@ -193,7 +193,7 @@ int parse_img (void)
 		if (fat->part == 0) {
 			if (memcmp(fat->type, "GMP", 3) == 0) {
 				struct gmp_header_struct *gmp = (struct gmp_header_struct *)(img_base + fat->blocks[0] * block_size);
-				unsigned long *prev_size = NULL;
+				unsigned int *prev_size = NULL;
 				int k;
 
 				vlog("fat%d: gmp 0x%x+%d\n", i, fat->blocks[0] * block_size, fat->size);
@@ -237,7 +237,7 @@ int parse_img (void)
 				subfile->size = fat->size;
 				memcpy(subfile->name, fat->name, 8); subfile->name[8] = '\0'; //TODO fix space padding
 				memcpy(subfile->type, fat->type, 3); subfile->type[8] = '\0';
-				vlog("fat%d: %s %s 0x%x+%lu\n", i, subfile->name, subfile->type,
+				vlog("fat%d: %s %s 0x%x+%u\n", i, subfile->name, subfile->type,
 						fat->blocks[0] * block_size, subfile->size);
 
 				subfile->next = NULL;
@@ -316,7 +316,7 @@ void dump_img (void)
 	struct subfile_struct *subfile;
 
 	for (subfile = subfiles; subfile != NULL; subfile = subfile->next) {
-		printf("%s.%s: offset=0x%x, size=%lu\n",
+		printf("%s.%s: offset=0x%x, size=%u\n",
 				subfile->name, subfile->type,
 				(int)((uint8_t *)subfile->header - img_base), subfile->size);
 	}
