@@ -85,6 +85,7 @@ struct subfile_struct {
 	unsigned int size;
 	char name[9];
 	char type[4];
+	int isnt;
 	struct submap_struct *map;
 	struct subfile_struct *next;
 };
@@ -170,10 +171,10 @@ int parse_img (void)
 		fatstart ++;
 		assert(fat->size % 512 == 0 && fat->size > fatstart * 512);
 		fatend = fat->size / 512;
-		vlog("use rootdir, fatstart=%d, fatend=%d\n", fatstart, fatend);
+		vlog("parsing fat use rootdir, fatstart=%d, fatend=%d\n", fatstart, fatend);
 	} else {
 		fatend = img->dataoffset / 512;
-		vlog("use dataoffset, fatstart=%d, fatend=%d\n", fatstart, fatend);
+		vlog("parsing fat use dataoffset, fatstart=%d, fatend=%d\n", fatstart, fatend);
 	}
 
 	for (i = fatstart; i < fatend; i ++) {
@@ -193,7 +194,6 @@ int parse_img (void)
 		if (fat->part == 0) {
 			if (memcmp(fat->type, "GMP", 3) == 0) {
 				struct gmp_header_struct *gmp = (struct gmp_header_struct *)(img_base + fat->blocks[0] * block_size);
-				unsigned int *prev_size = NULL;
 				int k;
 
 				vlog("fat%d: gmp 0x%x+%d\n", i, fat->blocks[0] * block_size, fat->size);
@@ -204,13 +204,11 @@ int parse_img (void)
 						continue;
 					}
 					offset += fat->blocks[0] * block_size;
-					if (prev_size)
-						*prev_size = offset - *prev_size;
 
 					subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
 					subfile->header = (struct subfile_header_struct *)(img_base + offset);
-					subfile->size = offset;
-					prev_size = &subfile->size;
+					subfile->size = fat->size - *(&gmp->tre_offset + k);
+					subfile->isnt = 1;
 					memcpy(subfile->name, fat->name, 8); subfile->name[8] = '\0'; //TODO fix space padding
 					switch (k) {
 						case 0: strncpy(subfile->type, "TRE", 3); break;
@@ -229,12 +227,11 @@ int parse_img (void)
 					else
 						subfiles_tail = subfiles_tail->next = subfile;
 				}
-				if (prev_size)
-					*prev_size = fat->blocks[0] * block_size + fat->size - *prev_size;
 			} else {
 				subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
 				subfile->header = (struct subfile_header_struct *)(img_base + fat->blocks[0] * block_size);
 				subfile->size = fat->size;
+				subfile->isnt = 0;
 				memcpy(subfile->name, fat->name, 8); subfile->name[8] = '\0'; //TODO fix space padding
 				memcpy(subfile->type, fat->type, 3); subfile->type[8] = '\0';
 				vlog("fat%d: %s %s 0x%x+%u\n", i, subfile->name, subfile->type,
@@ -257,6 +254,7 @@ int parse_img (void)
 			}
 		}
 	}
+	vlog("parsing fat finished\n");
 
 	/* build submaps link list */
 	submaps = submaps_tail = NULL;
@@ -264,6 +262,7 @@ int parse_img (void)
 		if (memcmp(subfile->type, "TRE", 3) != 0)
 			continue;
 		submap = (struct submap_struct *)malloc(sizeof(struct submap_struct));
+		memset(submap, 0, sizeof(struct submap_struct));
 		strcpy(submap->name, subfile->name);
 		submap->next = NULL;
 		if (submaps_tail == NULL)
