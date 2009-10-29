@@ -88,11 +88,14 @@ struct subfile_struct {
 };
 
 
+int verbose = 1;
 uint8_t *img_base;
 unsigned long img_size;
 struct subfile_struct *subfiles, *subfiles_tail;
 int subfile_num;
 int block_size;
+
+#define vlog(fmt, ...) if (verbose) fprintf(stderr, "LOG: " fmt, __VA_ARGS__)
 
 int map_img (const char *path)
 {
@@ -106,6 +109,7 @@ int map_img (const char *path)
 	if (fstat(img_fd, &sb) == -1)
 		return 1;
 	img_size = sb.st_size;
+	vlog("file size = %lu\n", img_size);
 
 	img_base = mmap(NULL, img_size, PROT_READ, MAP_PRIVATE, img_fd, 0);
 	if (img_base == MAP_FAILED)
@@ -137,6 +141,7 @@ int parse_img (void)
 	}
 
 	block_size = 1 << (img->blockexp1 + img->blockexp2);
+	vlog("block size = 1 << (%d + %d) = %d\n", img->blockexp1, img->blockexp2, block_size);
 
 	subfiles = subfiles_tail = NULL;
 	fatstart = img->fatoffset == 0 ? 3 : img->fatoffset;
@@ -149,31 +154,42 @@ int parse_img (void)
 		fatstart ++;
 		assert(fat->size % 512 == 0 && fat->size > fatstart * 512);
 		fatend = fat->size / 512;
+		vlog("use rootdir, fatstart=%d, fatend=%d\n", fatstart, fatend);
 	} else {
 		fatend = img->dataoffset / 512;
+		vlog("use dataoffset, fatstart=%d, fatend=%d\n", fatstart, fatend);
 	}
+
 	for (i = fatstart; i < fatend; i ++) {
 		struct fat_header_struct *fat = (struct fat_header_struct *)(img_base + i * 512);
 		struct subfile_struct *subfile;
 		int j;
 
-		if (fat->flag == 0)
+		if (fat->flag != 1) {
+			vlog("fat%d.flag = %d, skipped\n", i, fat->flag);
 			continue;
-		if (memcmp(fat->name, "        ", 8) == 0)
+		}
+		if (memcmp(fat->name, "        ", 8) == 0) {
+			vlog("fat%d is rootdir (size=%lu), skipped\n", i, fat->flag, fat->size);
 			continue;
+		}
 
 		if (fat->part == 0) {
-			subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
-			subfile->header = (struct subfile_header_struct *)(img_base + fat->blocks[0] * block_size);
-			subfile->size = fat->size;
-			strncpy(subfile->name, fat->name, 8);
-			strncpy(subfile->type, fat->type, 3);
+			if (memcmp(fat->type, "GMP") == 0) {
+				//TODO expand gmp
+			} else {
+				subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
+				subfile->header = (struct subfile_header_struct *)(img_base + fat->blocks[0] * block_size);
+				subfile->size = fat->size;
+				strncpy(subfile->name, fat->name, 8);
+				strncpy(subfile->type, fat->type, 3);
 
-			subfile->next = NULL;
-			if (subfiles_tail == NULL)
-				subfiles_tail = subfiles = subfile;
-			else
-				subfiles_tail = subfiles_tail->next = subfile;
+				subfile->next = NULL;
+				if (subfiles_tail == NULL)
+					subfiles_tail = subfiles = subfile;
+				else
+					subfiles_tail = subfiles_tail->next = subfile;
+			}
 
 			prev_block = fat->blocks[0] - 1;
 		}
