@@ -32,7 +32,8 @@ struct garmin_img {
 	uint8_t  blockexp1;
 	uint8_t  blockexp2;
 	uint16_t unknown_063;
-	char     desc2[31];
+	char     desc2[30];
+	uint8_t  unknown_083;
 	uint8_t  unknown_084[904];
 	uint32_t data_offset;
 	uint8_t  unknown_410[16];

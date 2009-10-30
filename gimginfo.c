@@ -335,6 +335,7 @@ void dump_img (void)
 	printf("blockexp1     %d\n", img->blockexp1);
 	printf("blockexp2     %d\n", img->blockexp2);
 	printf("unknown_063   %d\n", img->unknown_063);
+	printf("unknown_083   %d\n", img->unknown_083);
 	printf("unknown_084   %s\n", dump_unknown_bytes(img->unknown_084, sizeof(img->unknown_084)));
 	printf("data_offset   %d\n", img->data_offset);
 	printf("unknown_410   %s\n", dump_unknown_bytes(img->unknown_410, sizeof(img->unknown_410)));
