@@ -20,12 +20,12 @@ enum subtype {
 struct submap_struct;
 struct subfile_struct {
 	struct garmin_subfile *header;
-	unsigned char *base; // it's same as [header] if it's not NT
+	unsigned char *base; // it's same as [header] if it's OF
 	unsigned int size;
 	char name[9];
 	char type[4];
 	enum subtype typeid;
-	int isnt;
+	int isnt; // only two cases: OF, NT
 	struct submap_struct *map;
 	struct subfile_struct *next;
 	struct subfile_struct *orphan_next;
@@ -33,7 +33,17 @@ struct subfile_struct {
 
 struct submap_struct {
 	char name[9];
-	struct subfile_struct *subfiles[6]; // 5 in GMP + 1 for SRT
+	union {
+		struct subfile_struct *subfiles[6];
+		struct {
+			struct subfile_struct *tre; // always set.
+			struct subfile_struct *rgn;
+			struct subfile_struct *lbl;
+			struct subfile_struct *net;
+			struct subfile_struct *nod;
+			struct subfile_struct *srt;
+		};
+	};
 	struct submap_struct *next;
 };
 
@@ -342,12 +352,12 @@ void dump_img (void)
 
 	printf("=== SUBMAPS ===\n");
 	for (submap = submaps; submap != NULL; submap = submap->next) {
-		if (submap->subfiles[ST_TRE]->isnt) {
+		if (submap->tre->isnt) {
 			int k;
 			printf("%s: NT 0x%x+0x%x\n",
 					submap->name,
-					(int)(submap->subfiles[ST_TRE]->base - img_base),
-					submap->subfiles[ST_TRE]->size);
+					(int)(submap->tre->base - img_base),
+					submap->tre->size);
 			for (k = 0; k < 5; k ++) {
 				if (submap->subfiles[k])
 					printf(" %s abs=0x%x rel=0x%x\n",
@@ -357,10 +367,10 @@ void dump_img (void)
 				else
 					printf(" %s NIL\n", get_subtype_name(k));
 			}
-			if (submap->subfiles[ST_SRT])
+			if (submap->srt)
 				printf(" SRT off=0x%x size=0x%x\n",
-						(int)(submap->subfiles[ST_SRT]->base - img_base),
-						submap->subfiles[ST_SRT]->size);
+						(int)(submap->srt->base - img_base),
+						submap->srt->size);
 			else
 				printf(" SRT NIL\n");
 		} else { // OF
