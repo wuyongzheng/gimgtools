@@ -17,7 +17,7 @@ const char *dump_unknown_bytes (uint8_t *bytes, int size)
 		buffer = (char *)realloc(buffer, buffer_size);
 	}
 
-	for (repeat_byte = bytes[0], ptr = 1, repeat_count = outptr = 0; ptr < size; ptr ++) {
+	for (repeat_byte = bytes[0], ptr = 1, repeat_count = 1, outptr = 0; ptr < size; ptr ++) {
 		if (bytes[ptr] == repeat_byte) {
 			repeat_count ++;
 		} else {

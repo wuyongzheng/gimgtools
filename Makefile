@@ -1,12 +1,10 @@
 CC = gcc
 CFLAGS = -Wall
 
-gimginfo: gimginfo.o util.o
+gimginfo: gimginfo.o util.o sf_tre.o
 
 gimgxor: gimgxor.o
 
-dumptre: dumptre.o
-
 .PHONY: clean
 clean:
-	rm -f gimginfo gimgxor dumptre *.o
+	rm -f gimginfo gimgxor *.o

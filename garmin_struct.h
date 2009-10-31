@@ -54,7 +54,7 @@ struct garmin_subfile {
 	uint16_t hlen;
 	char     type[10];
 	uint8_t  unknown_00c;
-	uint8_t  unknown_00d;
+	uint8_t  locked;
 	uint16_t year;
 	uint8_t  month;
 	uint8_t  date;
@@ -65,10 +65,10 @@ struct garmin_subfile {
 
 struct garmin_tre {
 	struct garmin_subfile comm;
-	uint8_t northbound[3];         ///< 0x00000015 .. 0x00000017
-	uint8_t eastbound[3];          ///< 0x00000018 .. 0x0000001A
-	uint8_t southbound[3];         ///< 0x0000001B .. 0x0000001D
-	uint8_t westbound[3];          ///< 0x0000001E .. 0x00000020
+	uint8_t  northbound[3];         ///< 0x00000015 .. 0x00000017
+	uint8_t  eastbound[3];          ///< 0x00000018 .. 0x0000001A
+	uint8_t  southbound[3];         ///< 0x0000001B .. 0x0000001D
+	uint8_t  westbound[3];          ///< 0x0000001E .. 0x00000020
 	uint32_t tre1_offset;        ///< 0x00000021 .. 0x00000024
 	uint32_t tre1_size;          ///< 0x00000025 .. 0x00000028
 	uint32_t tre2_offset;        ///< 0x00000029 .. 0x0000002C
@@ -76,38 +76,39 @@ struct garmin_tre {
 	uint32_t tre3_offset;        ///< 0x00000031 .. 0x00000034
 	uint32_t tre3_size;          ///< 0x00000035 .. 0x00000038
 	uint16_t tre3_rec_size;      ///< 0x00000039 .. 0x0000003A
-	uint8_t byte0x0000003B_0x0000003E[4];
-	uint8_t POI_flags;           ///< 0x0000003F
-	uint8_t drawprio;            // map draw priority
-	uint8_t  byte0x00000041_0x00000049[9];
+	uint8_t  unknown_03b[4];
+	uint8_t  POI_flags;           ///< 0x0000003F
+	uint8_t  drawprio;            // map draw priority
+	uint8_t  unknown_041[9];
 	uint32_t tre4_offset;        ///< 0x0000004A .. 0x0000004D
 	uint32_t tre4_size;          ///< 0x0000004E .. 0x00000051
 	uint16_t tre4_rec_size;      ///< 0x00000052 .. 0x00000053
-	uint8_t  byte0x00000054_0x00000057[4];
+	uint8_t  unknown_054[4];
 	uint32_t tre5_offset;        ///< 0x00000058 .. 0x0000005B
 	uint32_t tre5_size;          ///< 0x0000005C .. 0x0000005F
 	uint16_t tre5_rec_size;      ///< 0x00000060 .. 0x00000061
-	uint8_t  byte0x00000062_0x00000065[4];
+	uint8_t  unknown_062[4];
 	uint32_t tre6_offset;        ///< 0x00000066 .. 0x00000069
 	uint32_t tre6_size;          ///< 0x0000006A .. 0x0000006D
 	uint16_t tre6_rec_size;      ///< 0x0000006E .. 0x0000006F
-	uint8_t  byte0x00000070_0x00000073[4];
+	uint8_t  unknown_070[4];
 	uint32_t mapID;
-	uint8_t  byte0x00000078_0x0000007B[4];
+	uint8_t  unknown_078[4];
 	uint32_t tre7_offset;        ///< 0x0000007C .. 0x0000007F
 	uint32_t tre7_size;          ///< 0x00000080 .. 0x00000083
 	uint16_t tre7_rec_size;      ///< 0x00000084 .. 0x00000085
-	uint8_t  byte0x00000086_0x00000089[4];
+	uint8_t  unknown_086[4];
 	uint32_t tre8_offset;        ///< 0x0000008A .. 0x0000008D
 	uint32_t tre8_size;          ///< 0x0000008E .. 0x00000091
 	uint16_t tre8_rec_size;
-	uint8_t  byte0x00000092_0x00000099[6];
+	uint8_t  unknown_092[6];
 	uint8_t  key[20];            ///< 0x0000009A .. 0x000000AD
-	uint8_t  gap1[4];
+//	uint8_t  gap1[4];
 	uint32_t tre9_offset;        ///< 0x000000AE .. 0x000000B1
 	uint32_t tre9_size;          ///< 0x000000B2 .. 0x000000B5
 	uint16_t tre9_rec_size;      ///< 0x000000B6 .. 0x000000B7
-	uint8_t  gap2[4];
+	uint8_t  unknown_0b8[4];
+//	uint8_t  gap2[4];
 	uint32_t tre10_offset;       ///< 0x000000AE .. 0x000000B1
 	uint32_t tre10_size;         ///< 0x000000B2 .. 0x000000B5
 	uint16_t tre10_rec_size;     ///< 0x000000B6 .. 0x000000B7
@@ -115,9 +116,7 @@ struct garmin_tre {
 
 struct garmin_tre_map_level {
 	uint8_t  level       :4;
-	uint8_t  bit4        :1;
-	uint8_t  bit5        :1;
-	uint8_t  bit6        :1;
+	uint8_t  bit456      :3;
 	uint8_t  inherited   :1;
 	uint8_t  bits;
 	uint16_t nsubdiv;
@@ -131,10 +130,6 @@ struct garmin_tre_subdiv {
 	uint16_t width       :15;
 	uint16_t terminate   :1;
 	uint16_t height;
-} __attribute__((packed));
-
-struct garmin_tre_subdiv_next {
-	struct garmin_tre_subdiv tresub;
 	uint16_t next;
 } __attribute__((packed));
 

@@ -118,11 +118,13 @@ static int parse_img (void)
 					memset(subfile, 0, sizeof(struct subfile_struct));
 					subfile->header = (struct garmin_subfile *)(img_base + abs_offset);
 					subfile->base = (unsigned char *)gmp;
+					subfile->offset = fat->blocks[0] * block_size;
 					subfile->size = fat->size;
 					subfile->isnt = 1;
 					memcpy(subfile->name, fat->name, 8);
 					string_trim(subfile->name, -1);
 					strncpy(subfile->type, get_subtype_name(k), 3);
+					sprintf(subfile->fullname, "%s.%s", subfile->name, subfile->type);
 					subfile->typeid = k;
 					vlog("%s.GMP.%s: reloff=0x%x, absoff=0x%x\n",
 							subfile->name, subfile->type,
@@ -139,12 +141,14 @@ static int parse_img (void)
 				memset(subfile, 0, sizeof(struct subfile_struct));
 				subfile->header = (struct garmin_subfile *)(img_base + fat->blocks[0] * block_size);
 				subfile->base = img_base + fat->blocks[0] * block_size;
+				subfile->offset = fat->blocks[0] * block_size;
 				subfile->size = fat->size;
 				subfile->isnt = 0;
 				memcpy(subfile->name, fat->name, 8);
 				string_trim(subfile->name, -1);
 				memcpy(subfile->type, fat->type, 3);
 				string_trim(subfile->type, -1);
+				sprintf(subfile->fullname, "%s.%s", subfile->name, subfile->type);
 				subfile->typeid = get_subtype_id(subfile->type);
 				vlog("fat%d: %s %s 0x%x+0x%x\n", i, subfile->name, subfile->type,
 						fat->blocks[0] * block_size, subfile->size);
@@ -208,6 +212,25 @@ static int parse_img (void)
 	return 0;
 }
 
+void dump_comm (struct garmin_subfile *header)
+{
+	char buffer[12];
+
+	printf("=== COMMON HEADER ===\n");
+	printf("hlen          %d\n", header->hlen);
+	memcpy(buffer, header->type, sizeof(header->type));
+	buffer[sizeof(header->type)] = '\0';
+	printf("type          %s\n", buffer);
+	printf("unknown_00c   %d\n", header->unknown_00c);
+	printf("locked        %d\n", header->locked);
+	printf("year          %d\n", header->year);
+	printf("month         %d\n", header->month);
+	printf("date          %d\n", header->date);
+	printf("hour          %d\n", header->hour);
+	printf("minute        %d\n", header->minute);
+	printf("second        %d\n", header->second);
+}
+
 static void dump_img (void)
 {
 	struct garmin_img *img = (struct garmin_img *)img_base;
@@ -262,7 +285,7 @@ static void dump_img (void)
 			int k;
 			printf("%s: NT 0x%x+0x%x\n",
 					submap->name,
-					(int)(submap->tre->base - img_base),
+					submap->tre->offset,
 					submap->tre->size);
 			for (k = 0; k < 5; k ++) {
 				if (submap->subfiles[k])
@@ -275,7 +298,7 @@ static void dump_img (void)
 			}
 			if (submap->srt)
 				printf(" SRT off=0x%x size=0x%x\n",
-						(int)(submap->srt->base - img_base),
+						submap->srt->offset,
 						submap->srt->size);
 			else
 				printf(" SRT NIL\n");
@@ -286,7 +309,7 @@ static void dump_img (void)
 				if (submap->subfiles[k])
 					printf(" %s off=0x%x size=0x%x\n",
 							get_subtype_name(k),
-							(int)(submap->subfiles[k]->base - img_base),
+							submap->subfiles[k]->offset,
 							submap->subfiles[k]->size);
 				else {
 					if (k != ST_SRT)
@@ -297,14 +320,27 @@ static void dump_img (void)
 	}
 	printf("=== OTHER SUBFILES ===\n");
 	for (subfile = orphans; subfile != NULL; subfile = subfile->orphan_next) {
-		printf("%s.%s: off=0x%x, size=0x%x\n",
-				subfile->name, subfile->type,
-				(int)(subfile->base - img_base), subfile->size);
+		printf("%s: off=0x%x, size=0x%x\n",
+				subfile->fullname, subfile->offset, subfile->size);
 	}
 }
 
 static void dump_subfile (const char *subfile_name)
 {
+	struct subfile_struct *subfile;
+
+	for (subfile = subfiles; subfile != NULL; subfile = subfile->next)
+		if (strcmp(subfile_name, subfile->fullname) == 0)
+			break;
+	if (subfile == NULL) {
+		printf("subfile %s not found\n", subfile_name);
+		return;
+	}
+	switch(subfile->typeid) {
+		case ST_TRE: dump_tre(subfile); break;
+		default:
+			dump_comm(subfile->header);
+	}
 }
 
 static void usage (void)

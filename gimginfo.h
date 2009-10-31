@@ -15,9 +15,11 @@ struct submap_struct;
 struct subfile_struct {
 	struct garmin_subfile *header;
 	unsigned char *base; // it's same as [header] if it's OF
+	unsigned int offset; // same as base, but is abs file offset
 	unsigned int size;
 	char name[9];
 	char type[4];
+	char fullname[13]; /* 8.3 */
 	enum subtype typeid;
 	int isnt; // only two cases: OF, NT
 	struct submap_struct *map;
@@ -55,9 +57,24 @@ extern int block_size;
 #define vlog(...) if (option_verbose) fprintf(stderr, "LOG: " __VA_ARGS__)
 #define warn(...) fprintf(stderr, "WARNING: " __VA_ARGS__)
 
+static inline unsigned int bytes_to_uint24 (unsigned char *bytes) {
+	return (*(unsigned int *)bytes) & 0x00ffffff;
+}
+static inline int bytes_to_sint24 (unsigned char *bytes) {
+	int n = (*(int *)bytes) & 0x00ffffff;
+	return (n < 0x00800000) ? n : (n | 0xff000000);
+}
+
+/* util.c */
 const char *dump_unknown_bytes (uint8_t *bytes, int size);
 enum subtype get_subtype_id (const char *str); // only use 3 chars from str
 const char *get_subtype_name (enum subtype id);
 void string_trim (char *str, int length);
+
+/* sf_tre.c */
+void dump_tre (struct subfile_struct *tre);
+
+/* gimginfo.c */
+void dump_comm (struct garmin_subfile *header);
 
 #endif
