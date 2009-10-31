@@ -115,11 +115,13 @@ static int parse_img (void)
 					abs_offset = rel_offset + fat->blocks[0] * block_size;
 
 					subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
+					memset(subfile, 0, sizeof(struct subfile_struct));
 					subfile->header = (struct garmin_subfile *)(img_base + abs_offset);
 					subfile->base = (unsigned char *)gmp;
 					subfile->size = fat->size;
 					subfile->isnt = 1;
-					memcpy(subfile->name, fat->name, 8); subfile->name[8] = '\0'; //TODO fix space padding
+					memcpy(subfile->name, fat->name, 8);
+					string_trim(subfile->name, -1);
 					strncpy(subfile->type, get_subtype_name(k), 3);
 					subfile->typeid = k;
 					vlog("%s.GMP.%s: reloff=0x%x, absoff=0x%x\n",
@@ -134,12 +136,15 @@ static int parse_img (void)
 				}
 			} else {
 				subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
+				memset(subfile, 0, sizeof(struct subfile_struct));
 				subfile->header = (struct garmin_subfile *)(img_base + fat->blocks[0] * block_size);
 				subfile->base = img_base + fat->blocks[0] * block_size;
 				subfile->size = fat->size;
 				subfile->isnt = 0;
-				memcpy(subfile->name, fat->name, 8); subfile->name[8] = '\0'; //TODO fix space padding
-				memcpy(subfile->type, fat->type, 3); subfile->type[8] = '\0';
+				memcpy(subfile->name, fat->name, 8);
+				string_trim(subfile->name, -1);
+				memcpy(subfile->type, fat->type, 3);
+				string_trim(subfile->type, -1);
 				subfile->typeid = get_subtype_id(subfile->type);
 				vlog("fat%d: %s %s 0x%x+0x%x\n", i, subfile->name, subfile->type,
 						fat->blocks[0] * block_size, subfile->size);
@@ -239,6 +244,7 @@ static void dump_img (void)
 	memcpy(buffer, img->desc1, sizeof(img->desc1));
 	memcpy(buffer + sizeof(img->desc1), img->desc2, sizeof(img->desc2));
 	buffer[sizeof(img->desc1) + sizeof(img->desc2)] = '\0';
+	string_trim(buffer, -1);
 	printf("desc          \"%s\"\n", buffer);
 	printf("heads1        %d\n", img->heads1);
 	printf("sectors1      %d\n", img->sectors1);

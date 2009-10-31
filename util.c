@@ -64,3 +64,14 @@ const char *get_subtype_name (enum subtype id)
 		"MPS", "QSI"};
 	return id >= ST_UNKNOWN ? NULL : type_names[id];
 }
+
+/* remove space characters at the end
+ * length = -1 means using strlen() */
+void string_trim (char *str, int length)
+{
+	int i;
+	if (length == -1)
+		length = strlen(str);
+	for (i = length - 1; i >= 0 && str[i] == ' '; i --)
+		str[i] = '\0';
+}

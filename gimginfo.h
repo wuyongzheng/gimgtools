@@ -58,5 +58,6 @@ extern int block_size;
 const char *dump_unknown_bytes (uint8_t *bytes, int size);
 enum subtype get_subtype_id (const char *str); // only use 3 chars from str
 const char *get_subtype_name (enum subtype id);
+void string_trim (char *str, int length);
 
 #endif
