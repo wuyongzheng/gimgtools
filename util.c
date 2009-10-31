@@ -10,10 +10,10 @@ const char *dump_unknown_bytes (uint8_t *bytes, int size)
 	int ptr, outptr, repeat_count, repeat_byte;
 
 	if (buffer == NULL) {
-		buffer_size = size * 4 > 4096 ? size * 4 : 4096;
+		buffer_size = size * 2 + 1 > 4096 ? size * 2 + 1 : 4096;
 		buffer = (char *)malloc(buffer_size);
-	} else if (buffer_size < size * 4) {
-		buffer_size = size * 4;
+	} else if (buffer_size < size * 2 + 1) {
+		buffer_size = size * 2 + 1;
 		buffer = (char *)realloc(buffer, buffer_size);
 	}
 
@@ -21,8 +21,10 @@ const char *dump_unknown_bytes (uint8_t *bytes, int size)
 		if (bytes[ptr] == repeat_byte) {
 			repeat_count ++;
 		} else {
-			if (repeat_count > 1) {
+			if (repeat_count >= 3) {
 				outptr += sprintf(buffer + outptr, "%02x(%d)", repeat_byte, repeat_count);
+			} else if (repeat_count == 2) {
+				outptr += sprintf(buffer + outptr, "%02x%02x", repeat_byte, repeat_byte);
 			} else {
 				outptr += sprintf(buffer + outptr, "%02x", repeat_byte);
 			}
@@ -30,8 +32,10 @@ const char *dump_unknown_bytes (uint8_t *bytes, int size)
 			repeat_count = 1;
 		}
 	}
-	if (repeat_count > 1) {
+	if (repeat_count >= 3) {
 		outptr += sprintf(buffer + outptr, "%02x(%d)", repeat_byte, repeat_count);
+	} else if (repeat_count == 2) {
+		outptr += sprintf(buffer + outptr, "%02x%02x", repeat_byte, repeat_byte);
 	} else {
 		outptr += sprintf(buffer + outptr, "%02x", repeat_byte);
 	}
