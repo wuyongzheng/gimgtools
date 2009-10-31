@@ -1,8 +1,12 @@
-gimginfo: gimginfo.c
-	gcc -Wall -o gimginfo gimginfo.c
+CC = gcc
+CFLAGS = -Wall
 
-gimgxor: gimgxor.c
-	gcc -Wall -o gimgxor gimgxor.c
+gimginfo: gimginfo.o util.o
 
-dumptre: dumptre.c
-	gcc -Wall -o dumptre dumptre.c
+gimgxor: gimgxor.o
+
+dumptre: dumptre.o
+
+.PHONY: clean
+clean:
+	rm -f gimginfo gimgxor dumptre *.o

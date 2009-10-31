@@ -8,84 +8,20 @@
 #include <assert.h>
 #include <string.h>
 #include "garmin_struct.h"
+#include "gimginfo.h"
 
-enum subtype {
-	ST_TRE, ST_RGN, ST_LBL, ST_NET, ST_NOD, // these 5 should match the GMP header
-	ST_SRT,
-	ST_GMP,
-	ST_TYP, ST_MDR, ST_TRF, ST_MPS, ST_QSI,
-	ST_UNKNOWN
-};
-
-struct submap_struct;
-struct subfile_struct {
-	struct garmin_subfile *header;
-	unsigned char *base; // it's same as [header] if it's OF
-	unsigned int size;
-	char name[9];
-	char type[4];
-	enum subtype typeid;
-	int isnt; // only two cases: OF, NT
-	struct submap_struct *map;
-	struct subfile_struct *next;
-	struct subfile_struct *orphan_next;
-};
-
-struct submap_struct {
-	char name[9];
-	union {
-		struct subfile_struct *subfiles[6];
-		struct {
-			struct subfile_struct *tre; // always set.
-			struct subfile_struct *rgn;
-			struct subfile_struct *lbl;
-			struct subfile_struct *net;
-			struct subfile_struct *nod;
-			struct subfile_struct *srt;
-		};
-	};
-	struct submap_struct *next;
-};
-
-int verbose = 1;
+int option_verbose = 0;
+const char *option_img_path = NULL;
+const char *option_subfile = NULL;
 unsigned char *img_base;
 unsigned int img_size;
-struct subfile_struct *subfiles, *subfiles_tail;
-struct submap_struct *submaps, *submaps_tail;
-struct subfile_struct *orphans, *orphans_tail; // files not belonging to any submap
+struct subfile_struct *subfiles;
+struct submap_struct *submaps;
+struct subfile_struct *orphans; // files not belonging to any submap
 int subfile_num;
 int block_size;
 
-#define vlog(...) if (verbose) fprintf(stderr, "LOG: " __VA_ARGS__)
-#define warn(...) fprintf(stderr, "WARNING: " __VA_ARGS__)
-
-enum subtype get_subtype_id (const char *str) // only use 3 chars from str
-{
-	if (memcmp(str, "TRE", 3) == 0) return ST_TRE;
-	if (memcmp(str, "RGN", 3) == 0) return ST_RGN;
-	if (memcmp(str, "LBL", 3) == 0) return ST_LBL;
-	if (memcmp(str, "NET", 3) == 0) return ST_NET;
-	if (memcmp(str, "NOD", 3) == 0) return ST_NOD;
-	if (memcmp(str, "SRT", 3) == 0) return ST_SRT;
-	if (memcmp(str, "GMP", 3) == 0) return ST_GMP;
-	if (memcmp(str, "TYP", 3) == 0) return ST_TYP;
-	if (memcmp(str, "MDR", 3) == 0) return ST_MDR;
-	if (memcmp(str, "TRF", 3) == 0) return ST_TRF;
-	if (memcmp(str, "MPS", 3) == 0) return ST_MPS;
-	if (memcmp(str, "QSI", 3) == 0) return ST_QSI;
-	return ST_UNKNOWN;
-}
-
-const char *get_subtype_name (enum subtype id)
-{
-	const static char *type_names[] = {
-		"TRE", "RGN", "LBL", "NET", "NOD",
-		"SRT", "GMP", "TYP", "MDR", "TRF",
-		"MPS", "QSI"};
-	return id >= ST_UNKNOWN ? NULL : type_names[id];
-}
-
-int map_img (const char *path)
+static int map_img (const char *path)
 {
 	int img_fd;
 	struct stat sb;
@@ -108,17 +44,17 @@ int map_img (const char *path)
 	return 0;
 }
 
-void unmap_img (void)
+static void unmap_img (void)
 {
 	munmap(img_base, img_size);
 }
 
 /* assign global variables */
-int parse_img (void)
+static int parse_img (void)
 {
 	struct garmin_img *img = (struct garmin_img *)img_base;
-	struct subfile_struct *subfile;
-	struct submap_struct *submap;
+	struct subfile_struct *subfile, *subfiles_tail, *orphans_tail;
+	struct submap_struct *submap, *submaps_tail;
 	int fatstart, fatend, i, prev_block;
 
 	if (img->xor_byte != 0) {
@@ -267,43 +203,7 @@ int parse_img (void)
 	return 0;
 }
 
-const char *dump_unknown_bytes (uint8_t *bytes, int size)
-{
-	static char *buffer = NULL;
-	static int buffer_size = 0;
-	int ptr, outptr, repeat_count, repeat_byte;
-
-	if (buffer == NULL) {
-		buffer_size = size * 4 > 4096 ? size * 4 : 4096;
-		buffer = (char *)malloc(buffer_size);
-	} else if (buffer_size < size * 4) {
-		buffer_size = size * 4;
-		buffer = (char *)realloc(buffer, buffer_size);
-	}
-
-	for (repeat_byte = bytes[0], ptr = 1, repeat_count = outptr = 0; ptr < size; ptr ++) {
-		if (bytes[ptr] == repeat_byte) {
-			repeat_count ++;
-		} else {
-			if (repeat_count > 1) {
-				outptr += sprintf(buffer + outptr, "%02x(%d)", repeat_byte, repeat_count);
-			} else {
-				outptr += sprintf(buffer + outptr, "%02x", repeat_byte);
-			}
-			repeat_byte = bytes[ptr];
-			repeat_count = 1;
-		}
-	}
-	if (repeat_count > 1) {
-		outptr += sprintf(buffer + outptr, "%02x(%d)", repeat_byte, repeat_count);
-	} else {
-		outptr += sprintf(buffer + outptr, "%02x", repeat_byte);
-	}
-
-	return buffer;
-}
-
-void dump_img (void)
+static void dump_img (void)
 {
 	struct garmin_img *img = (struct garmin_img *)img_base;
 	struct subfile_struct *subfile;
@@ -397,22 +297,61 @@ void dump_img (void)
 	}
 }
 
+static void dump_subfile (const char *subfile_name)
+{
+}
+
+static void usage (void)
+{
+	printf("Usage gimginfo [options] imgfile [subfile]\n");
+}
+
 int main (int argc, char **argv)
 {
-	assert(sizeof(struct garmin_img) == 0x600);
+	int i;
 
-	if (argc != 2) {
-		printf("Usage: %s file.img\n", argv[0]);
+	for (i = 1; i < argc; i ++) {
+		if (strcmp(argv[i], "-v") == 0) {
+			option_verbose = 1;
+		} else if (strcmp(argv[i], "-h") == 0 ||
+				strcmp(argv[i], "--help") == 0 ||
+				strcmp(argv[i], "-?") == 0) {
+			usage();
+			return 0;
+		} else if (argv[i][0] == '-') {
+			printf("unknown option %s\n", argv[i]);
+			usage();
+			return 1;
+		} else {
+			if (option_img_path == NULL)
+				option_img_path = argv[i];
+			else if (option_subfile == NULL)
+				option_subfile = argv[i];
+			else {
+				printf("only one subfile please.\n");
+				usage();
+				return 1;
+			}
+		}
+	}
+
+	if (option_img_path == NULL) {
+		printf("no img file specified\n");
+		usage();
 		return 1;
 	}
 
-	if (map_img(argv[1]))
+	if (map_img(option_img_path))
 		return 1;
 
 	if (parse_img())
 		return 1;
 
-	dump_img();
+	if (option_subfile) {
+		dump_subfile(option_subfile);
+	} else {
+		dump_img();
+	}
 
 	unmap_img();
 
