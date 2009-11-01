@@ -213,6 +213,6 @@ struct garmin_gmp {
 	uint32_t net_offset;
 	uint32_t nod_offset;
 	uint32_t unknown_20d;
-}  __attribute__((packed));
+} __attribute__((packed));
 
 #endif
