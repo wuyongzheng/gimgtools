@@ -222,7 +222,7 @@ void dump_comm (struct garmin_subfile *header)
 	buffer[sizeof(header->type)] = '\0';
 	printf("type          %s\n", buffer);
 	printf("unknown_00c   %d\n", header->unknown_00c);
-	printf("locked        %d\n", header->locked);
+	printf("locked        0x%x\n", header->locked);
 	printf("year          %d\n", header->year);
 	printf("month         %d\n", header->month);
 	printf("date          %d\n", header->date);

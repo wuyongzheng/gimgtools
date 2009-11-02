@@ -146,7 +146,7 @@ headerfini:
 
 	printf("=== MAP LEVELS ===\n");
 	if (header->comm.locked)
-		printf("locked\n");
+		printf("locked: %s\n", dump_unknown_bytes(tre->base + header->tre1_offset, header->tre1_size));
 	else
 		dump_maplevels((struct garmin_tre_map_level *)(tre->base + header->tre1_offset),
 				header->tre1_size / sizeof(struct garmin_tre_map_level));
