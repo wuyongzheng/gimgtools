@@ -106,10 +106,10 @@ void dump_tre (struct subfile_struct *tre)
 			header->tre6_offset, tre->offset + header->tre6_offset, header->tre6_size, header->tre6_rec_size);
 	printf("unknown_070:            %s\n", dump_unknown_bytes(header->unknown_070, sizeof(header->unknown_070)));
 	if (header->comm.hlen <= 0x74)
-		goto dumpsubdiv;
+		goto headerfini;
 	printf("Map ID:                 0x%x(%d)\n", header->mapID, header->mapID);
 	if (header->comm.hlen <= 0x78)
-		goto dumpsubdiv;
+		goto headerfini;
 	printf("unknown_078:            %s\n", dump_unknown_bytes(header->unknown_078, sizeof(header->unknown_078)));
 	printf("TRE7:                   reloff=0x%x absoff=0x%x size=0x%x recsize=0x%x\n",
 			header->tre7_offset, tre->offset + header->tre7_offset, header->tre7_size, header->tre7_rec_size);
@@ -118,19 +118,19 @@ void dump_tre (struct subfile_struct *tre)
 			header->tre8_offset, tre->offset + header->tre8_offset, header->tre8_size, header->tre8_rec_size);
 	printf("unknown_092:            %s\n", dump_unknown_bytes(header->unknown_092, sizeof(header->unknown_092)));
 	if (header->comm.hlen <= 0x9a)
-		goto dumpsubdiv;
+		goto headerfini;
 	printf("Encrpytion Key:         %s\n", dump_unknown_bytes(header->key, sizeof(header->key)));
 	printf("TRE9:                   reloff=0x%x absoff=0x%x size=0x%x recsize=0x%x\n",
 			header->tre9_offset, tre->offset + header->tre9_offset, header->tre9_size, header->tre9_rec_size);
 	printf("unknown_0b8:            %s\n", dump_unknown_bytes(header->unknown_0b8, sizeof(header->unknown_0b8)));
 	if (header->comm.hlen <= 0xbc)
-		goto dumpsubdiv;
+		goto headerfini;
 	printf("from 0xbc to 0x%x (%d bytes): %s\n",
 			header->comm.hlen - 1,
 			header->comm.hlen - 0xbc,
 			dump_unknown_bytes((uint8_t *)header + 0xbc, header->comm.hlen - 0xbc));
+headerfini:
 
-dumpsubdiv:
 	printf("=== MAP LEVELS ===\n");
 	if (header->comm.locked)
 		printf("locked\n");
