@@ -5,6 +5,19 @@
 #include <string.h>
 #include "gimginfo.h"
 
+static void dump_poverview (uint8_t *ptr, int num, int size)
+{
+	while(num -- > 0) {
+		int i;
+		printf("type=0x%2x", ptr[0]);
+		printf(" maxl=%2d", ptr[1]);
+		for (i = 2; i < size; i ++)
+			printf(" subtype=0x%2x", ptr[i]);
+		printf("\n");
+		ptr += size;
+	}
+}
+
 static void dump_subdiv_single (struct garmin_tre_subdiv *div, int index, int level, int leave)
 {
 	printf("%5d %d off=%06x ele=%02x, lng=%8d(%+11.6f), lat=%8d(%+11.6f), width=%5d, height=%5d %c",
@@ -142,4 +155,25 @@ headerfini:
 	dump_subdiv(tre->base + header->tre2_offset,
 			header->tre1_size / 4,
 			header->comm.locked ? (struct garmin_tre_map_level *)(tre->base + header->tre1_offset) : NULL);
+
+	//TODO copyright
+
+	if (header->tre4_size) {
+		printf("=== POLYLINE OVERVIEWS ===\n");
+		dump_poverview(tre->base + header->tre4_offset,
+				header->tre4_size / header->tre4_rec_size,
+				header->tre4_rec_size);
+	}
+	if (header->tre5_size) {
+		printf("=== POLYGON OVERVIEWS ===\n");
+		dump_poverview(tre->base + header->tre5_offset,
+				header->tre5_size / header->tre5_rec_size,
+				header->tre5_rec_size);
+	}
+	if (header->tre6_size) {
+		printf("=== POINT OVERVIEWS ===\n");
+		dump_poverview(tre->base + header->tre6_offset,
+				header->tre6_size / header->tre6_rec_size,
+				header->tre6_rec_size);
+	}
 }
