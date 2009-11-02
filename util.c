@@ -1,7 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "gimginfo.h"
+
+const char *sint24_to_lat (int n)
+{
+	static char buffers[8][12];
+	static int buffer_ptr = 0;
+	char *buffer = buffers[buffer_ptr ++ % 8];
+
+	assert(n < 0x800000 && n >= -0x800000);
+	if (n < 0)
+		sprintf(buffer, "%.5fS", n * (360.0 / 0x01000000));
+	else
+		sprintf(buffer, "%.5fN", n * (360.0 / 0x01000000));
+	return buffer;
+}
+
+const char *sint24_to_lng (int n)
+{
+	static char buffers[8][12];
+	static int buffer_ptr = 0;
+	char *buffer = buffers[buffer_ptr ++ % 8];
+
+	assert(n < 0x800000 && n >= -0x800000);
+	if (n < 0)
+		sprintf(buffer, "%.5fW", n * (360.0 / 0x01000000));
+	else
+		sprintf(buffer, "%.5fE", n * (360.0 / 0x01000000));
+	return buffer;
+}
 
 const char *dump_unknown_bytes (uint8_t *bytes, int size)
 {

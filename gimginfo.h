@@ -66,6 +66,8 @@ static inline int bytes_to_sint24 (unsigned char *bytes) {
 }
 
 /* util.c */
+const char *sint24_to_lat (int n);
+const char *sint24_to_lng (int n);
 const char *dump_unknown_bytes (uint8_t *bytes, int size);
 enum subtype get_subtype_id (const char *str); // only use 3 chars from str
 const char *get_subtype_name (enum subtype id);

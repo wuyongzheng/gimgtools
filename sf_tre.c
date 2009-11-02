@@ -20,11 +20,11 @@ static void dump_poverview (uint8_t *ptr, int num, int size)
 
 static void dump_subdiv_single (struct garmin_tre_subdiv *div, int index, int level, int leave)
 {
-	printf("%5d %d off=%06x ele=%02x, lng=%8d(%+11.6f), lat=%8d(%+11.6f), width=%5d, height=%5d %c",
+	printf("%5d %d off=%06x ele=%02x, lng=%8d(%s), lat=%8d(%s), width=%5d, height=%5d %c",
 			index, level,
 			bytes_to_uint24(div->rgn_offset), div->elements,
-			bytes_to_sint24(div->center_lng), bytes_to_sint24(div->center_lng) * (360.0 / 0x01000000),
-			bytes_to_sint24(div->center_lat), bytes_to_sint24(div->center_lat) * (360.0 / 0x01000000),
+			bytes_to_sint24(div->center_lng), sint24_to_lng(bytes_to_sint24(div->center_lng)),
+			bytes_to_sint24(div->center_lat), sint24_to_lat(bytes_to_sint24(div->center_lat)),
 			div->width, div->height, div->terminate ? 'T' : ' ');
 	if (leave)
 		printf("\n");
@@ -91,11 +91,11 @@ void dump_tre (struct subfile_struct *tre)
 	dump_comm(tre->header);
 
 	printf("=== TRE HEADER ===\n");
-	printf("Bound:                  %d(%f) %d(%f) %d(%f) %d(%f)\n",
-			bytes_to_sint24(header->northbound), bytes_to_sint24(header->northbound) * (360.0 / 0x01000000),
-			bytes_to_sint24(header->eastbound),  bytes_to_sint24(header->eastbound) * (360.0 / 0x01000000),
-			bytes_to_sint24(header->southbound), bytes_to_sint24(header->southbound) * (360.0 / 0x01000000),
-			bytes_to_sint24(header->westbound),  bytes_to_sint24(header->westbound) * (360.0 / 0x01000000));
+	printf("Bound:                  %d(%s) %d(%s) %d(%s) %d(%s)\n",
+			bytes_to_sint24(header->northbound), sint24_to_lat(bytes_to_sint24(header->northbound)),
+			bytes_to_sint24(header->eastbound),  sint24_to_lng(bytes_to_sint24(header->eastbound)),
+			bytes_to_sint24(header->southbound), sint24_to_lat(bytes_to_sint24(header->southbound)),
+			bytes_to_sint24(header->westbound),  sint24_to_lng(bytes_to_sint24(header->westbound)));
 	printf("TRE1 Map Levels:        reloff=0x%x absoff=0x%x size=0x%x\n",
 			header->tre1_offset, tre->offset + header->tre1_offset, header->tre1_size);
 	printf("TRE2 Subdivisions:      reloff=0x%x absoff=0x%x size=0x%x\n",
