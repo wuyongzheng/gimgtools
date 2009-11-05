@@ -85,6 +85,7 @@ static void dump_maplevels (struct garmin_tre_map_level *levels, int num)
 void dump_tre (struct subfile_struct *tre)
 {
 	struct garmin_tre *header = (struct garmin_tre *)tre->header;
+	struct garmin_tre_map_level *maplevels;
 
 	assert(tre->typeid == ST_TRE);
 
@@ -145,11 +146,19 @@ void dump_tre (struct subfile_struct *tre)
 headerfini:
 
 	printf("=== MAP LEVELS ===\n");
-	if (header->comm.locked)
+	if (header->comm.locked) {
 		printf("locked: %s\n", dump_unknown_bytes(tre->base + header->tre1_offset, header->tre1_size));
-	else
-		dump_maplevels((struct garmin_tre_map_level *)(tre->base + header->tre1_offset),
-				header->tre1_size / sizeof(struct garmin_tre_map_level));
+		maplevels = (struct garmin_tre_map_level *)malloc(header->tre1_size);
+		unlockml((unsigned char *)maplevels,
+				(unsigned char *)tre->base + header->tre1_offset,
+				header->tre1_size,
+				*(unsigned int *)(header->key+16));
+		//TODO some simple verification, maybe?
+	} else {
+		maplevels = (struct garmin_tre_map_level *)(tre->base + header->tre1_offset);
+	}
+	if (maplevels)
+		dump_maplevels(maplevels, header->tre1_size / sizeof(struct garmin_tre_map_level));
 
 	printf("=== SUBDIVISIONS ===\n");
 	dump_subdiv(tre->base + header->tre2_offset,
@@ -176,4 +185,7 @@ headerfini:
 				header->tre6_size / header->tre6_rec_size,
 				header->tre6_rec_size);
 	}
+
+	if (maplevels && maplevels != (struct garmin_tre_map_level *)(tre->base + header->tre1_offset))
+		free(maplevels);
 }

@@ -72,6 +72,35 @@ const char *dump_unknown_bytes (uint8_t *bytes, int size)
 	return buffer;
 }
 
+void unlockml (unsigned char *dst, const unsigned char *src,
+		int size, unsigned int key)
+{
+	static const unsigned char shuf[] = {
+		0xb, 0xc, 0xa, 0x0,
+		0x8, 0xf, 0x2, 0x1,
+		0x6, 0x4, 0x9, 0x3,
+		0xd, 0x5, 0x7, 0xe};
+	int i, ringctr;
+	int key_sum = shuf[((key >> 24) + (key >> 16) + (key >> 8) + key) & 0xf];
+
+	for (i = 0, ringctr = 16; i < size; i ++) {
+		unsigned int upper = src[i] >> 4;
+		unsigned int lower = src[i];
+
+		upper -= key_sum;
+		upper -= key >> ringctr;
+		upper -= shuf[(key >> ringctr) & 0xf];
+		ringctr = ringctr ? ringctr - 4 : 16;
+
+		lower -= key_sum;
+		lower -= key >> ringctr;
+		lower -= shuf[(key >> ringctr) & 0xf];
+		ringctr = ringctr ? ringctr - 4 : 16;
+
+		dst[i] = ((upper << 4) & 0xf0) | (lower & 0xf);
+	}
+}
+
 enum subtype get_subtype_id (const char *str) // only use 3 chars from str
 {
 	if (memcmp(str, "TRE", 3) == 0) return ST_TRE;

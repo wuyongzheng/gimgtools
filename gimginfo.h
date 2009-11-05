@@ -69,6 +69,7 @@ static inline int bytes_to_sint24 (unsigned char *bytes) {
 const char *sint24_to_lat (int n);
 const char *sint24_to_lng (int n);
 const char *dump_unknown_bytes (uint8_t *bytes, int size);
+void unlockml (unsigned char *dst, const unsigned char *src, int size, unsigned int key);
 enum subtype get_subtype_id (const char *str); // only use 3 chars from str
 const char *get_subtype_name (enum subtype id);
 void string_trim (char *str, int length);
