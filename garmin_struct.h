@@ -129,7 +129,8 @@ struct garmin_tre_subdiv {
 	uint8_t  center_lat[3];
 	uint16_t width       :15;
 	uint16_t terminate   :1;
-	uint16_t height;
+	uint16_t height      :15;
+	uint16_t unknownbit  :1;
 	uint16_t next;
 } __attribute__((packed));
 
