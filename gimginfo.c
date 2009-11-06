@@ -283,7 +283,7 @@ static void dump_img (void)
 	for (submap = submaps; submap != NULL; submap = submap->next) {
 		if (submap->tre->isnt) {
 			int k;
-			printf("%s: NT 0x%x+0x%x\n",
+			printf("%s: NT off=0x%x size=0x%x\n",
 					submap->name,
 					submap->tre->offset,
 					submap->tre->size);
@@ -327,20 +327,28 @@ static void dump_img (void)
 
 static void dump_subfile (const char *subfile_name)
 {
-	struct subfile_struct *subfile;
-
-	for (subfile = subfiles; subfile != NULL; subfile = subfile->next)
-		if (strcmp(subfile_name, subfile->fullname) == 0)
-			break;
-	if (subfile == NULL) {
-		printf("subfile %s not found\n", subfile_name);
-		return;
+	if (strlen(subfile_name) >= 5 &&
+			strcmp(".GMP", subfile_name + strlen(subfile_name) - 4) == 0) {
+		struct submap_struct *submap;
+		for (submap = submaps; submap != NULL; submap = submap->next) {
+			if (memcmp(submap->name, subfile_name, strlen(submap->name)) == 0) {
+				dump_comm((struct garmin_subfile *)submap->tre->base);
+				return;
+			}
+		}
+	} else {
+		struct subfile_struct *subfile;
+		for (subfile = subfiles; subfile != NULL; subfile = subfile->next) {
+			if (strcmp(subfile_name, subfile->fullname) == 0) {
+				switch(subfile->typeid) {
+					case ST_TRE: dump_tre(subfile); break;
+					default: dump_comm(subfile->header);
+				}
+				return;
+			}
+		}
 	}
-	switch(subfile->typeid) {
-		case ST_TRE: dump_tre(subfile); break;
-		default:
-			dump_comm(subfile->header);
-	}
+	printf("subfile %s not found\n", subfile_name);
 }
 
 static void usage (void)
