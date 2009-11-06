@@ -9,4 +9,4 @@ gimgunlock: gimgunlock.o
 
 .PHONY: clean
 clean:
-	rm -f gimginfo gimgxor *.o
+	rm -f gimginfo gimgxor gimgunlock *.o
