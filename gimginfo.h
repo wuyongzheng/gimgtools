@@ -80,6 +80,9 @@ void dump_typ (struct subfile_struct *typ);
 /* sf_tre.c */
 void dump_tre (struct subfile_struct *tre);
 
+/* sf_mps.c */
+void dump_mps (struct subfile_struct *mps);
+
 /* gimginfo.c */
 void dump_comm (struct garmin_subfile *header);
 

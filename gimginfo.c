@@ -343,6 +343,7 @@ static void dump_subfile (const char *subfile_name)
 				switch(subfile->typeid) {
 					case ST_TRE: dump_tre(subfile); break;
 					case ST_TYP: dump_typ(subfile); break;
+					case ST_MPS: dump_mps(subfile); break;
 					default: dump_comm(subfile->header);
 				}
 				return;
