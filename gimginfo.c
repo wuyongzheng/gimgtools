@@ -217,7 +217,7 @@ void dump_comm (struct garmin_subfile *header)
 	char buffer[12];
 
 	printf("=== COMMON HEADER ===\n");
-	printf("hlen          %d\n", header->hlen);
+	printf("hlen          %d (0x%x)\n", header->hlen, header->hlen);
 	memcpy(buffer, header->type, sizeof(header->type));
 	buffer[sizeof(header->type)] = '\0';
 	printf("type          %s\n", buffer);
@@ -342,6 +342,7 @@ static void dump_subfile (const char *subfile_name)
 			if (strcmp(subfile_name, subfile->fullname) == 0) {
 				switch(subfile->typeid) {
 					case ST_TRE: dump_tre(subfile); break;
+					case ST_TYP: dump_typ(subfile); break;
 					default: dump_comm(subfile->header);
 				}
 				return;

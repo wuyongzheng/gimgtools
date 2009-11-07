@@ -216,4 +216,52 @@ struct garmin_gmp {
 	uint32_t unknown_20d;
 } __attribute__((packed));
 
+/* http://ati.land.cz/ */
+struct garmin_typ
+{
+	struct garmin_subfile comm;
+	uint16_t codepage;    /* offset = 0x15 */
+	uint32_t point_datoff;
+	uint32_t point_datsize;
+	uint32_t line_datoff;
+	uint32_t line_datsize;
+	uint32_t polygon_datoff;
+	uint32_t polygon_datsize;
+	uint16_t fid;
+	uint16_t pid;
+	uint32_t point_arroff;
+	uint16_t point_arrmod;
+	uint32_t point_arrsize;
+	uint32_t line_arroff;
+	uint16_t line_arrmod;
+	uint32_t line_arrsize;
+	uint32_t polygon_arroff;
+	uint16_t polygon_arrmod;
+	uint32_t polygon_arrsize;
+	uint32_t draworder_arroff;
+	uint16_t draworder_arrmod;
+	uint32_t draworder_arrsize;
+	/* possible size limit here*/
+	uint32_t nt1_arroff; /* offset = 0x5B */
+	uint16_t nt1_arrmod;
+	uint32_t nt1_arrsize;
+	uint8_t  nt1_flag;
+	uint32_t nt1_datoff;
+	uint32_t nt1_datsize;
+	/* possible size limit here*/
+	uint32_t blok0_x;    /* offset = 0x6E */
+	uint32_t blok0_off;
+	uint32_t blok0_size;
+	uint32_t blok0_y;
+	uint32_t blok1_x;
+	uint32_t blok1_off;
+	uint32_t blok1_size;
+	uint32_t blok1_y;
+	uint32_t blok2_x;
+	uint32_t blok2_off;
+	uint32_t blok2_size;
+	uint16_t unknown_09a;
+	/* offset = 0x9C */
+} __attribute__((packed));
+
 #endif

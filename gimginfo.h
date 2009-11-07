@@ -74,6 +74,9 @@ enum subtype get_subtype_id (const char *str); // only use 3 chars from str
 const char *get_subtype_name (enum subtype id);
 void string_trim (char *str, int length);
 
+/* sf_typ.c */
+void dump_typ (struct subfile_struct *typ);
+
 /* sf_tre.c */
 void dump_tre (struct subfile_struct *tre);
 
