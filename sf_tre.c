@@ -143,7 +143,7 @@ void dump_tre (struct subfile_struct *tre)
 	printf("unknown_086:            %s\n", dump_unknown_bytes(header->unknown_086, sizeof(header->unknown_086)));
 	printf("TRE8:                   reloff=0x%x absoff=0x%x size=0x%x recsize=0x%x\n",
 			header->tre8_offset, tre->offset + header->tre8_offset, header->tre8_size, header->tre8_rec_size);
-	printf("unknown_092:            %s\n", dump_unknown_bytes(header->unknown_092, sizeof(header->unknown_092)));
+	printf("unknown_094:            %s\n", dump_unknown_bytes(header->unknown_094, sizeof(header->unknown_094)));
 	if (header->comm.hlen <= 0x9a)
 		goto headerfini;
 	printf("Encrpytion Key:         %s\n", dump_unknown_bytes(header->key, sizeof(header->key)));
@@ -152,10 +152,13 @@ void dump_tre (struct subfile_struct *tre)
 	printf("unknown_0b8:            %s\n", dump_unknown_bytes(header->unknown_0b8, sizeof(header->unknown_0b8)));
 	if (header->comm.hlen <= 0xbc)
 		goto headerfini;
-	printf("from 0xbc to 0x%x (%d bytes): %s\n",
-			header->comm.hlen - 1,
-			header->comm.hlen - 0xbc,
-			dump_unknown_bytes((uint8_t *)header + 0xbc, header->comm.hlen - 0xbc));
+	printf("TRE10:                  reloff=0x%x absoff=0x%x size=0x%x recsize=0x%x\n",
+			header->tre10_offset, tre->offset + header->tre10_offset, header->tre10_size, header->tre10_rec_size);
+	if (header->comm.hlen > sizeof(struct garmin_tre))
+		printf("from 0x%x to 0x%x (0x%x bytes): %s\n",
+				sizeof(struct garmin_tre), header->comm.hlen - 1,
+				header->comm.hlen - sizeof(struct garmin_tre),
+				dump_unknown_bytes((uint8_t *)header + sizeof(struct garmin_tre), header->comm.hlen - sizeof(struct garmin_tre)));
 headerfini:
 
 	printf("=== MAP LEVELS ===\n");

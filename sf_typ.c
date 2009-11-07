@@ -57,8 +57,8 @@ void dump_typ (struct subfile_struct *typ)
 			header->blok2_size, header->blok2_x);
 	printf("Unknown09a: 0x%x\n", header->unknown_09a);
 	if (header->comm.hlen > 0x9c)
-		printf("from 0x9c to 0x%x: %s\n",
-				header->comm.hlen - 1,
+		printf("from 0x9c to 0x%x (0x%x bytes): %s\n",
+				header->comm.hlen - 1, header->comm.hlen - 0x9c,
 				dump_unknown_bytes((uint8_t *)header + 0x9c, header->comm.hlen - 0x9c));
 headerfini:
 

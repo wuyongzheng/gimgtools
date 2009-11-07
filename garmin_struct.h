@@ -101,17 +101,15 @@ struct garmin_tre {
 	uint32_t tre8_offset;        ///< 0x0000008A .. 0x0000008D
 	uint32_t tre8_size;          ///< 0x0000008E .. 0x00000091
 	uint16_t tre8_rec_size;
-	uint8_t  unknown_092[6];
+	uint8_t  unknown_094[6];
 	uint8_t  key[20];            ///< 0x0000009A .. 0x000000AD
-//	uint8_t  gap1[4];
 	uint32_t tre9_offset;        ///< 0x000000AE .. 0x000000B1
 	uint32_t tre9_size;          ///< 0x000000B2 .. 0x000000B5
 	uint16_t tre9_rec_size;      ///< 0x000000B6 .. 0x000000B7
 	uint8_t  unknown_0b8[4];
-//	uint8_t  gap2[4];
-	uint32_t tre10_offset;       ///< 0x000000AE .. 0x000000B1
-	uint32_t tre10_size;         ///< 0x000000B2 .. 0x000000B5
-	uint16_t tre10_rec_size;     ///< 0x000000B6 .. 0x000000B7
+	uint32_t tre10_offset;       ///< 0x000000BC .. 0x000000BF
+	uint32_t tre10_size;         ///< 0x000000C0 .. 0x000000C3
+	uint16_t tre10_rec_size;     ///< 0x000000C4 .. 0x000000C5
 } __attribute__((packed));
 
 struct garmin_tre_map_level {
