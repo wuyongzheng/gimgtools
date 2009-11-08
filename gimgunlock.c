@@ -131,13 +131,16 @@ struct patch_struct *unlock_tre (FILE *fp, struct patch_struct *patch,
 	printf("decrypted ml: ");
 	hexdump(patch->data, mlsize);
 
-	patch = prepend_patch(patch, 4);
-	patch->offset = header + 0xaa;
-	memset(patch->data, 0, 4);
+	patch = prepend_patch(patch, 20);
+	patch->offset = header + 0x9a;
+	read_bytes_at(fp, header + 0x9a, patch->data, 20);
+	patch->data[1] ^= 0x80;
+	memcpy(patch->data + 8, patch->data + 12, 4);
+	memset(patch->data + 16, 0, 4);
 
 	patch = prepend_patch(patch, 1);
 	patch->offset = header + 0xd;
-	patch->data[0] = read_byte_at(fp, (header + 0xd) ^ 0x80);
+	patch->data[0] = read_byte_at(fp, (header + 0xd)) ^ 0x80;
 
 	return patch;
 }
