@@ -134,9 +134,13 @@ struct patch_struct *unlock_tre (FILE *fp, struct patch_struct *patch,
 	patch = prepend_patch(patch, 20);
 	patch->offset = header + 0x9a;
 	read_bytes_at(fp, header + 0x9a, patch->data, 20);
+	printf("orig key: ");
+	hexdump(patch->data, 20);
 	patch->data[1] ^= 0x80;
 	memcpy(patch->data + 8, patch->data + 12, 4);
 	memset(patch->data + 16, 0, 4);
+	printf("new key:  ");
+	hexdump(patch->data, 20);
 
 	patch = prepend_patch(patch, 1);
 	patch->offset = header + 0xd;
