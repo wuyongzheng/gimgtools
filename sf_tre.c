@@ -95,6 +95,25 @@ static void dump_maplevels (struct garmin_tre_map_level *levels, int num)
 	}
 }
 
+static void dump_tre7 (uint8_t *ptr, int size, int rec_size, struct garmin_tre_map_level *levels)
+{
+	int sdidx = 0;
+	while (size >= rec_size) {
+		printf("%4d:", sdidx ++);
+		printf(" rng2_reloff=0x%x", *(uint32_t *)ptr);
+		if (rec_size >= 8)
+			printf(" rng3_reloff=0x%x", *(uint32_t *)(ptr+4));
+		if (rec_size >= 12)
+			printf(" rng4_reloff=0x%x", *(uint32_t *)(ptr+8));
+		if (rec_size >= 16)
+			printf(" rng5_reloff=0x%x", *(uint32_t *)(ptr+12));
+		if (rec_size % 4)
+			printf(" flag=0x%x\n", *(ptr+rec_size-1));
+		ptr += rec_size;
+		size -= rec_size;
+	}
+}
+
 void dump_tre (struct subfile_struct *tre)
 {
 	struct garmin_tre *header = (struct garmin_tre *)tre->header;
@@ -202,6 +221,12 @@ headerfini:
 		dump_poverview(tre->base + header->tre6_offset,
 				header->tre6_size / header->tre6_rec_size,
 				header->tre6_rec_size);
+	}
+
+	if (header->comm.hlen >= 0x85 && header->tre7_size) {
+		printf("=== TRE7 ===\n");
+		dump_tre7(tre->base + header->tre7_offset, header->tre7_size,
+				header->tre7_rec_size, maplevels);
 	}
 
 	if (maplevels)
