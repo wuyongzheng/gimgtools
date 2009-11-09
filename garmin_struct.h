@@ -1,7 +1,12 @@
 #ifndef GARMIN_STRUCT_H
 #define GARMIN_STRUCT_H
 
-#include <stdint.h>
+#ifdef GT_POSIX
+# define PACK_STRUCT __attribute__((packed))
+#else
+# define PACK_STRUCT
+# pragma pack(push, 1)
+#endif
 
 struct garmin_img {
 	uint8_t  xor_byte;
@@ -38,7 +43,7 @@ struct garmin_img {
 	uint32_t data_offset;
 	uint8_t  unknown_410[16];
 	uint16_t blocks[240];
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_fat {
 	uint8_t  flag;
@@ -48,7 +53,7 @@ struct garmin_fat {
 	uint16_t part;
 	uint8_t  unknown_012[14];
 	uint16_t blocks[240];
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_subfile {
 	uint16_t hlen;
@@ -61,7 +66,7 @@ struct garmin_subfile {
 	uint8_t  hour;
 	uint8_t  minute;
 	uint8_t  second;
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_tre {
 	struct garmin_subfile comm;
@@ -110,7 +115,7 @@ struct garmin_tre {
 	uint32_t tre10_offset;       ///< 0x000000BC .. 0x000000BF
 	uint32_t tre10_size;         ///< 0x000000C0 .. 0x000000C3
 	uint16_t tre10_rec_size;     ///< 0x000000C4 .. 0x000000C5
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_tre_map_level {
 	uint8_t  level       :4;
@@ -118,7 +123,7 @@ struct garmin_tre_map_level {
 	uint8_t  inherited   :1;
 	uint8_t  bits;
 	uint16_t nsubdiv;
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_tre_subdiv {
 	uint8_t  rgn_offset[3];
@@ -130,13 +135,13 @@ struct garmin_tre_subdiv {
 	uint16_t height      :15;
 	uint16_t unknownbit  :1;
 	uint16_t next;
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_rgn {
 	struct garmin_subfile comm;
 	uint32_t data_off;
 	uint32_t data_len;
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_lbl {
 	struct garmin_subfile comm;
@@ -186,7 +191,7 @@ struct garmin_lbl {
 	uint16_t lbl11_rec_size;     ///< 0x000000A4 .. 0x000000A5
 	uint8_t  byte0x000000A6_0x000000AB[4];
 	uint16_t codepage;           ///< 0x000000AA .. 0x000000AB  optional check length
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_net {
 	struct garmin_subfile comm;
@@ -201,7 +206,7 @@ struct garmin_net {
 	// Sorted Roads
 	uint32_t net3_offset;        ///< 0x00000027 .. 0x0000002A
 	uint32_t net3_length;        ///< 0x0000002B .. 0x0000002E
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 struct garmin_gmp {
 	struct garmin_subfile comm;
@@ -212,7 +217,7 @@ struct garmin_gmp {
 	uint32_t net_offset;
 	uint32_t nod_offset;
 	uint32_t unknown_20d;
-} __attribute__((packed));
+} PACK_STRUCT ;
 
 /* http://ati.land.cz/ */
 struct garmin_typ
@@ -260,6 +265,11 @@ struct garmin_typ
 	uint32_t blok2_size;
 	uint16_t unknown_09a;
 	/* offset = 0x9C */
-} __attribute__((packed));
+} PACK_STRUCT ;
+
+#ifdef GT_POSIX
+#else
+# pragma pack(pop)
+#endif
 
 #endif

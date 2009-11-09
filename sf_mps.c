@@ -1,13 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-#include <string.h>
 #include "gimginfo.h"
 
 void dump_mps (struct subfile_struct *mps)
 {
-	int line;
+	unsigned int line;
 
 	for (line = 0; line < mps->size;) {
 		int type = *(mps->base + line + 0);

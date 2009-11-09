@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-#include <string.h>
 #include "gimginfo.h"
 
 void dump_typ (struct subfile_struct *typ)

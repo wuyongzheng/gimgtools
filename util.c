@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 #include "gimginfo.h"
 
 const char *sint24_to_lat (int n)

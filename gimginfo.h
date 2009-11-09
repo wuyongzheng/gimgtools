@@ -1,6 +1,29 @@
 #ifndef GIMGINFO_H
 #define GIMGINFO_H
 
+/* It's either VC in Windows or POSIX */
+#if defined(_MSC_VER) || defined(WIN32) || defined(WIN64) || defined(_WIN32) || defined(_WIN64)
+# define GT_WINDOWS
+# include <stdio.h>
+# include <stdlib.h>
+# include <assert.h>
+# include <string.h>
+# include <windows.h>
+# include "stdintvc.h"
+# define inline __inline
+#else
+# define GT_POSIX
+# include <stdio.h>
+# include <stdlib.h>
+# include <assert.h>
+# include <string.h>
+# include <sys/mman.h>
+# include <sys/stat.h>
+# include <unistd.h>
+# include <fcntl.h>
+# include <stdint.h>
+#endif
+
 #include "garmin_struct.h"
 
 enum subtype {

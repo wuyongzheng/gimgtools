@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-#include <string.h>
 #include "gimginfo.h"
 
 static void dump_poverview (uint8_t *ptr, int num, int size)

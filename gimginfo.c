@@ -1,13 +1,3 @@
-#include <stdio.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <assert.h>
-#include <string.h>
-#include "garmin_struct.h"
 #include "gimginfo.h"
 
 int option_verbose = 0;
@@ -21,23 +11,34 @@ struct subfile_struct *orphans; // files not belonging to any submap
 int subfile_num;
 int block_size;
 
+#ifdef GT_POSIX
 static int map_img (const char *path)
 {
 	int img_fd;
 	struct stat sb;
 
 	img_fd = open(path, O_RDONLY);
-	if (img_fd == -1)
+	if (img_fd == -1) {
+		printf("cannot open file %s\n", path);
 		return 1;
+	}
 
-	if (fstat(img_fd, &sb) == -1)
+	if (fstat(img_fd, &sb) == -1) {
+		printf("cannot get size of file %s\n", path);
 		return 1;
+	}
 	img_size = sb.st_size;
+	if (img_size == 0) {
+		printf("file %s is an empty file\n", path);
+		return 1;
+	}
 	vlog("file size = %u\n", img_size);
 
 	img_base = mmap(NULL, img_size, PROT_READ, MAP_PRIVATE, img_fd, 0);
-	if (img_base == MAP_FAILED)
+	if (img_base == MAP_FAILED) {
+		printf("cannot map file %s into memory\n", path);
 		return 1;
+	}
 
 	close(img_fd);
 
@@ -47,7 +48,53 @@ static int map_img (const char *path)
 static void unmap_img (void)
 {
 	munmap(img_base, img_size);
+	img_base = NULL;
 }
+#else
+static int map_img (const char *path)
+{
+	HANDLE hfile, hmapping;
+
+	hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ,
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hfile == INVALID_HANDLE_VALUE) {
+		printf("cannot open file %s\n", path);
+		return 1;
+	}
+
+	img_size = GetFileSize(hfile, NULL);
+	if (img_size == INVALID_FILE_SIZE) {
+		printf("cannot get size of file %s\n", path);
+		return 1;
+	}
+	if (img_size == 0) {
+		printf("file %s is an empty file\n", path);
+		return 1;
+	}
+	vlog("file size = %u\n", img_size);
+
+	hmapping = CreateFileMapping(hfile, NULL, PAGE_READONLY, 0, 0, NULL);
+	if (hmapping == NULL) {
+		printf("cannot map (1) file %s into memory\n", path);
+		return 1;
+	}
+	img_base = MapViewOfFile(hmapping, FILE_MAP_READ, 0, 0, 0);
+	if (img_base == NULL) {
+		printf("cannot map (2) file %s into memory\n", path);
+		return 1;
+	}
+
+	CloseHandle(hmapping);
+	CloseHandle(hfile);
+	return 0;
+}
+
+static void unmap_img (void)
+{
+	UnmapViewOfFile(img_base);
+	img_base = NULL;
+}
+#endif
 
 /* assign global variables */
 static int parse_img (void)
@@ -55,7 +102,7 @@ static int parse_img (void)
 	struct garmin_img *img = (struct garmin_img *)img_base;
 	struct subfile_struct *subfile, *subfiles_tail, *orphans_tail;
 	struct submap_struct *submap, *submaps_tail;
-	int fatstart, fatend, i, prev_block;
+	unsigned int fatstart, fatend, i, prev_block;
 
 	if (img->xor_byte != 0) {
 		printf("XOR is not 0. Fix it first.\n");
@@ -78,7 +125,7 @@ static int parse_img (void)
 			return 1;
 		}
 		fatstart ++;
-		assert(fat->size % 512 == 0 && fat->size > fatstart * 512);
+		assert(fat->size % 512 == 0 && fat->size > (unsigned)fatstart * 512);
 		fatend = fat->size / 512;
 		vlog("parsing fat use rootdir, fatstart=%d, fatend=%d\n", fatstart, fatend);
 	} else {
