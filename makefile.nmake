@@ -1,0 +1,33 @@
+CFLAGS = /nologo /W2 /O2
+OBJS = gimginfo.obj util.obj sf_tre.obj sf_typ.obj sf_mps.obj
+
+all: gimginfo.exe gimgxor.exe gimgunlock.exe
+
+gimginfo.exe: $(OBJS)
+	$(CC) $(CFLAGS) /Fegimginfo.exe $(OBJS)
+
+gimgxor.exe: gimgxor.c
+	$(CC) $(CFLAGS) gimgxor.c
+
+gimgunlock.exe: gimgunlock.c
+	$(CC) $(CFLAGS) gimgunlock.c
+
+gimginfo.obj:
+	$(CC) $(CFLAGS) /c gimginfo.c
+
+util.obj:
+	$(CC) $(CFLAGS) /c util.c
+
+sf_tre.obj:
+	$(CC) $(CFLAGS) /c sf_tre.c
+
+sf_typ.obj:
+	$(CC) $(CFLAGS) /c sf_typ.c
+
+sf_mps.obj:
+	$(CC) $(CFLAGS) /c sf_mps.c
+
+clean:
+	-del /F $(OBJS) gimginfo.exe
+	-del /F gimgxor.exe gimgxor.obj
+	-del /F gimgunlock.exe gimgunlock.obj
