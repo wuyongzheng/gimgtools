@@ -104,6 +104,8 @@ static void dump_tre7 (uint8_t *ptr, int size, int rec_size, struct garmin_tre_m
 			printf(" rng5_reloff=0x%x", *(uint32_t *)(ptr+12));
 		if (rec_size % 4)
 			printf(" flag=0x%x\n", *(ptr+rec_size-1));
+		else
+			printf("\n");
 		ptr += rec_size;
 		size -= rec_size;
 	}
