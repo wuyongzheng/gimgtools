@@ -8,9 +8,10 @@
 struct header_struct {
 	const char *imgpath;
 	char subfile[16];
-	int header_size;
 	int header_rel_offset; /* 0 if it's OF */
+	int header_size;
 	int subfile_offset; /* abs offset */
+	int subfile_size;
 	unsigned char *header;
 	char id[4];
 };
@@ -95,9 +96,10 @@ static void display_headers (void)
 	emptyid[strlen(headers[0]->id)] = '\0';
 
 	for (i = 0; i < header_num; i ++) {
-		printf("%s foff=%8x hoff=%4x hlen=%4x %s %s\n",
+		printf("%s foff=%8x flen=%8x hoff=%4x hlen=%4x %s %s\n",
 				headers[i]->id,
 				headers[i]->subfile_offset,
+				headers[i]->subfile_size,
 				headers[i]->header_rel_offset,
 				headers[i]->header_size,
 				headers[i]->imgpath,
@@ -264,6 +266,7 @@ static int read_header (const char *imgpath, const char *subfile)
 		strcat(header->subfile, curr_subfile_type);
 		header->header_rel_offset = header_rel_offset;
 		header->subfile_offset = subfile_offset;
+		header->subfile_size = read_4byte_at(fp, offset + 0xc);
 
 		header->header_size = read_2byte_at(fp, header->subfile_offset + header->header_rel_offset);
 		if (header->header_size < 0x15)
