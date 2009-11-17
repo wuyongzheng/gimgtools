@@ -16,7 +16,7 @@ struct header_struct {
 };
 
 static int line_columns;
-#define MAX_HEADERS 4096
+#define MAX_HEADERS 8192
 static struct header_struct *headers[MAX_HEADERS];
 static int header_num = 0;
 
@@ -103,6 +103,7 @@ static void display_headers (void)
 				headers[i]->imgpath,
 				headers[i]->subfile);
 	}
+	printf("\n");
 
 	for (ptr = 0; ;ptr += bytes_pre_line) {
 		int more_lines = 0, bc, fc;
@@ -147,6 +148,15 @@ static void display_headers (void)
 			}
 			printf("\n");
 		}
+
+		/* print address bar again */
+		printf("%s ", emptyid);
+		for (bc = 0; bc < bytes_pre_line - 2; bc += 4) {
+			printf("%-4x", ptr + bc);
+			if (bc < bytes_pre_line - 4)
+			printf("    ");
+		}
+		printf("\n\n");
 
 		if (!more_lines)
 			break;
@@ -262,6 +272,8 @@ static int read_header (const char *imgpath, const char *subfile)
 		header->header = (unsigned char *)malloc(header->header_size);
 		read_bytes_at(fp, header->subfile_offset + header->header_rel_offset, header->header, header->header_size);
 
+		if (header_num >= MAX_HEADERS)
+			errexit("too many files\n");
 		headers[header_num ++] = header;
 		added ++;
 	}
