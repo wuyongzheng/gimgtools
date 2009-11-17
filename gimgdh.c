@@ -251,7 +251,7 @@ static int read_header (const char *imgpath, const char *subfile)
 		header->imgpath = imgpath;
 		strcpy(header->subfile, curr_subfile_name);
 		strcat(header->subfile, ".");
-		strcat(header->subfile, subfile_type);
+		strcat(header->subfile, curr_subfile_type);
 		header->header_rel_offset = header_rel_offset;
 		header->subfile_offset = subfile_offset;
 
