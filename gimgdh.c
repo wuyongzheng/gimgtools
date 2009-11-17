@@ -4,8 +4,8 @@
 #include <assert.h>
 
 struct header_struct {
-	const char *filepath;
-	const char *subfilename;
+	const char *imgpath;
+	char subfile[16];
 	int header_size;
 	int header_rel_offset; /* 0 if it's OF */
 	int subfile_offset; /* abs offset */
@@ -98,8 +98,8 @@ static void display_headers (void)
 				headers[i]->subfile_offset,
 				headers[i]->header_rel_offset,
 				headers[i]->header_size,
-				headers[i]->filepath,
-				headers[i]->subfilename);
+				headers[i]->imgpath,
+				headers[i]->subfile);
 	}
 
 	for (ptr = 0; ;ptr += bytes_pre_line) {
@@ -152,22 +152,23 @@ static void display_headers (void)
 }
 
 #define errexit(...) do {printf(__VA_ARGS__); if (fp) fclose(fp); return 1;} while (0)
-static int read_header (struct header_struct *header)
+static int read_header (const char *imgpath, const char *subfile)
 {
 	FILE *fp = NULL;
 	int block_size, fatstart, fatend, fatcount;
 	char subfile_name[16], *subfile_type;
+	int added = 0;
 
-	strncpy(subfile_name, header->subfilename, sizeof(subfile_name));
+	strncpy(subfile_name, subfile, sizeof(subfile_name));
 	subfile_name[sizeof(subfile_name) - 1] = '\0';
 	if (strchr(subfile_name, '.') == NULL)
-		errexit("wrong subfile name %s\n", header->subfilename);
+		errexit("wrong subfile name %s\n", subfile);
 	subfile_type = strchr(subfile_name, '.') + 1;
 	strchr(subfile_name, '.')[0] = '\0';
 
-	fp = fopen(header->filepath, "rb");
+	fp = fopen(imgpath, "rb");
 	if (fp == NULL)
-		errexit("can't open %s", header->filepath);
+		errexit("can't open %s", imgpath);
 
 	if ((read_byte_at(fp, 0) ^ read_byte_at(fp, 0x10)) != 'D' ||
 			(read_byte_at(fp, 0) ^ read_byte_at(fp, 0x15)) != 'G')
@@ -196,8 +197,9 @@ static int read_header (struct header_struct *header)
 	}
 
 	for (fatcount = fatstart; fatcount < fatend; fatcount ++) {
-		unsigned long offset = fatcount * 512, header_offset;
+		unsigned long offset = fatcount * 512, header_rel_offset, subfile_offset;
 		char curr_subfile_name[9], curr_subfile_type[4];
+		struct header_struct *header;
 
 		if (read_byte_at(fp, offset) != 1)
 			continue;
@@ -215,33 +217,41 @@ static int read_header (struct header_struct *header)
 		if (strchr(curr_subfile_type, ' '))
 			strchr(curr_subfile_type, ' ')[0] = '\0';
 
-		if (strcasecmp(curr_subfile_name, subfile_name) != 0)
+		if (subfile_name[0] != '\0' && strcasecmp(curr_subfile_name, subfile_name) != 0)
 			continue;
 		if (strcasecmp(curr_subfile_type, subfile_type) == 0) {
-			header_offset = read_2byte_at(fp, offset + 0x20) * block_size;
-			header->header_rel_offset = 0;
-			header->subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
+			subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
+			header_rel_offset = 0;
 		} else if (strcmp(curr_subfile_type, "GMP") == 0) {
-			header->subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
-			if (read_byte_at(fp, header->subfile_offset + 0x2) != 'G' ||
-					read_byte_at(fp, header->subfile_offset + 0x9) != 'G' ||
-					read_byte_at(fp, header->subfile_offset + 0xa) != 'M' ||
-					read_byte_at(fp, header->subfile_offset + 0xb) != 'P')
+			subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
+			if (read_byte_at(fp, subfile_offset + 0x2) != 'G' ||
+					read_byte_at(fp, subfile_offset + 0x9) != 'G' ||
+					read_byte_at(fp, subfile_offset + 0xa) != 'M' ||
+					read_byte_at(fp, subfile_offset + 0xb) != 'P')
 				continue;
 			if (strcasecmp(subfile_type, "TRE") == 0)
-				header->header_rel_offset = read_4byte_at(fp, header->subfile_offset + 0x19);
+				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x19);
 			else if (strcasecmp(subfile_type, "RGN") == 0)
-				header->header_rel_offset = read_4byte_at(fp, header->subfile_offset + 0x1d);
+				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x1d);
 			else if (strcasecmp(subfile_type, "LBL") == 0)
-				header->header_rel_offset = read_4byte_at(fp, header->subfile_offset + 0x21);
+				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x21);
 			else if (strcasecmp(subfile_type, "NET") == 0)
-				header->header_rel_offset = read_4byte_at(fp, header->subfile_offset + 0x25);
+				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x25);
 			else if (strcasecmp(subfile_type, "NOD") == 0)
-				header->header_rel_offset = read_4byte_at(fp, header->subfile_offset + 0x29);
-			if (header->header_rel_offset == 0)
+				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x29);
+			if (header_rel_offset == 0)
 				continue;
-		} else
+		} else {
 			continue;
+		}
+
+		header = (struct header_struct *)malloc(sizeof(struct header_struct));
+		header->imgpath = imgpath;
+		strcpy(header->subfile, curr_subfile_name);
+		strcat(header->subfile, ".");
+		strcat(header->subfile, subfile_type);
+		header->header_rel_offset = header_rel_offset;
+		header->subfile_offset = subfile_offset;
 
 		header->header_size = read_2byte_at(fp, header->subfile_offset + header->header_rel_offset);
 		if (header->header_size < 0x15)
@@ -249,7 +259,13 @@ static int read_header (struct header_struct *header)
 
 		header->header = (unsigned char *)malloc(header->header_size);
 		read_bytes_at(fp, header->subfile_offset + header->header_rel_offset, header->header, header->header_size);
+
+		headers[header_num ++] = header;
+		added ++;
 	}
+
+	if (added == 0)
+		errexit("cannot find %s %s\n", imgpath, subfile);
 
 	fclose(fp);
 	return 0;
@@ -286,10 +302,8 @@ int main (int argc, char *argv[])
 				usage();
 				return 1;
 			}
-			headers[header_num] = (struct header_struct *)malloc(sizeof(struct header_struct));
-			headers[header_num]->filepath = argv[i];
-			headers[header_num]->subfilename = argv[i+1];
-			header_num ++;
+			if (read_header(argv[i], argv[i+1]))
+				return 1;
 			i ++;
 		}
 	}
@@ -299,10 +313,6 @@ int main (int argc, char *argv[])
 		usage();
 		return 1;
 	}
-
-	for (i = 0; i < header_num; i ++)
-		if (read_header(headers[i]))
-			return 1;
 
 	display_headers();
 
