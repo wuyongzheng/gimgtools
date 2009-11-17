@@ -32,6 +32,12 @@ void dump_mps (struct subfile_struct *mps)
 			printf(" id=%x ?=%x\n", *(uint32_t *)(mps->base + ptr), *(uint32_t *)(mps->base + ptr + 4));
 			ptr += 8;
 			break;
+		case 0x50:
+			printf("0x50: pid=%d fid=%d ?=%s\n",
+					*(uint16_t *)(mps->base + ptr + 0),
+					*(uint16_t *)(mps->base + ptr + 2),
+					dump_unknown_bytes(mps->base + ptr + 4, size - 4));
+			break;
 		case 0x55:
 			printf("0x55: str=\"%s\"\n", mps->base + ptr);
 			ptr += strlen((char *)mps->base + ptr) + 1;
