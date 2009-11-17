@@ -7,6 +7,8 @@ gimgxor: gimgxor.o
 
 gimgunlock: gimgunlock.o
 
+gimgdh: gimgdh.o
+
 .PHONY: clean
 clean:
-	rm -f gimginfo gimgxor gimgunlock *.o
+	rm -f gimginfo gimgxor gimgunlock gimgdh *.o

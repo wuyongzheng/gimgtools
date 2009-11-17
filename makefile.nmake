@@ -12,6 +12,9 @@ gimgxor.exe: gimgxor.c
 gimgunlock.exe: gimgunlock.c
 	$(CC) $(CFLAGS) gimgunlock.c
 
+gimgdh.exe: gimgdh.c
+	$(CC) $(CFLAGS) gimgdh.c
+
 gimginfo.obj:
 	$(CC) $(CFLAGS) /c gimginfo.c
 
@@ -31,3 +34,4 @@ clean:
 	-del /F $(OBJS) gimginfo.exe
 	-del /F gimgxor.exe gimgxor.obj
 	-del /F gimgunlock.exe gimgunlock.obj
+	-del /F gimgdh.exe gimgdh.obj
