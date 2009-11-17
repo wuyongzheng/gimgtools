@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 struct header_struct {
 	const char *imgpath;
@@ -13,7 +15,7 @@ struct header_struct {
 	char id[4];
 };
 
-static int line_columns = 80;
+static int line_columns;
 #define MAX_HEADERS 4096
 static struct header_struct *headers[MAX_HEADERS];
 static int header_num = 0;
@@ -279,6 +281,16 @@ static void usage (void)
 int main (int argc, char *argv[])
 {
 	int i;
+
+	/* default line_columns */
+	if (isatty(1)) {
+		struct winsize w;
+		ioctl(1, TIOCGWINSZ, &w);
+		printf("%x\n", w.ws_col);
+		line_columns = w.ws_col;
+	} else {
+		line_columns = 80;
+	}
 
 	for (i = 1; i < argc; i ++) {
 		if (strcmp("-h", argv[i]) == 0 ||
