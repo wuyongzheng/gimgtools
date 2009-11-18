@@ -10,7 +10,7 @@ static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned in
 	struct stat sb;
 	uint8_t *base;
 
-	img_fd = open(path, O_RDONLY);
+	img_fd = open(path, readonly ? O_RDONLY : O_RDWR);
 	if (img_fd == -1) {
 		fprintf(stderr, "cannot open file %s\n", path);
 		return 1;
@@ -26,7 +26,8 @@ static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned in
 	}
 	//vlog("file size = %u\n", img_size);
 
-	base = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, img_fd, 0);
+	base = mmap(NULL, sb.st_size, readonly ? PROT_READ : PROT_READ | PROT_WRITE,
+			MAP_PRIVATE, img_fd, 0);
 	if (base == MAP_FAILED) {
 		fprintf(stderr, "cannot map file %s into memory\n", path);
 		return 1;
@@ -50,8 +51,8 @@ static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned in
 	uint8_t *base;
 	unsigned int size;
 
-	hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ,
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	hfile = CreateFile(path, readonly ? GENERIC_READ : GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
 		fprintf(stderr, "cannot open file %s\n", path);
 		return 1;
@@ -68,12 +69,14 @@ static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned in
 	}
 	//vlog("file size = %u\n", size);
 
-	hmapping = CreateFileMapping(hfile, NULL, PAGE_READONLY, 0, 0, NULL);
+	hmapping = CreateFileMapping(hfile, NULL,
+			readonly ? PAGE_READONLY : PAGE_READWRITE,
+			0, 0, NULL);
 	if (hmapping == NULL) {
 		fprintf(stderr, "cannot map (1) file %s into memory\n", path);
 		return 1;
 	}
-	base = MapViewOfFile(hmapping, FILE_MAP_READ, 0, 0, 0);
+	base = MapViewOfFile(hmapping, readonly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, 0, 0);
 	if (base == NULL) {
 		fprintf(stderr, "cannot map (2) file %s into memory\n", path);
 		return 1;
