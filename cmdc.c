@@ -70,8 +70,8 @@ int main (int argc, char *argv[])
 			fprintf(stderr, "warning: OOB %f %f %d %d\n", x, y, ix, iy);
 			continue;
 		}
-		devs[iy * x_num * 2 + ix * 2 + 0] = idx;
-		devs[iy * x_num * 2 + ix * 2 + 1] = idy;
+		devs[iy * x_num * 2 + ix * 2 + 0] = round(dx * CMD_DUPD);
+		devs[iy * x_num * 2 + ix * 2 + 1] = round(dy * CMD_DUPD);
 		assign_round[iy * x_num + ix] = 2;
 		loaded ++;
 	}
