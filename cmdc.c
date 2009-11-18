@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
 	int spd; /* sample per degree */
 	short *devs;
 	unsigned char *assign_round;
-	int x_num, y_num, iround;
+	int x_num, y_num;
 	int loaded = 0, interpolated = 0;
 
 	if (argc != 2 || (spd = atoi(argv[1])) == 0) {
@@ -44,7 +44,7 @@ int main (int argc, char *argv[])
 	devs = malloc(y_num * x_num * 2 * sizeof(short));
 	memset(devs, 0, y_num * x_num * 2 * sizeof(short));
 	assign_round = malloc(y_num * x_num);
-	memset(assign_round, -1, y_num * x_num);
+	memset(assign_round, 0, y_num * x_num);
 	fprintf(stderr, "spd=%d, %d (EW) x %d (NS) = %d samples\n",
 			spd, x_num, y_num, x_num * y_num);
 
@@ -72,35 +72,35 @@ int main (int argc, char *argv[])
 		}
 		devs[iy * x_num * 2 + ix * 2 + 0] = idx;
 		devs[iy * x_num * 2 + ix * 2 + 1] = idy;
-		assign_round[iy * x_num + ix] = 0;
+		assign_round[iy * x_num + ix] = 2;
 		loaded ++;
 	}
 	fprintf(stderr, "%d samples loaded\n", loaded);
 
-	/* apply some interpolation */
-	for (iround = 1; iround < 100; iround ++) {
-		int x, y;
+	/* apply interpolation */
+	while (1) {
+		int x, y, this_itpd = 0;
 
 		for (y = 0; y < y_num; y ++) for (x = 0; x < x_num; x ++) {
 			int sumdx = 0, sumdy = 0, n = 0;
-			if (assign_round[y * x_num + x] != 0xff)
+			if (assign_round[y * x_num + x] != 0)
 				continue;
-			if (x > 0         && assign_round[y * x_num + (x - 1)] < iround) {
+			if (x > 0         && assign_round[y * x_num + (x - 1)] == 2) {
 				sumdx += devs[y * x_num * 2 + (x - 1) * 2 + 0];
 				sumdy += devs[y * x_num * 2 + (x - 1) * 2 + 1];
 				n ++;
 			}
-			if (x < x_num - 1 && assign_round[y * x_num + (x + 1)] < iround) {
+			if (x < x_num - 1 && assign_round[y * x_num + (x + 1)] == 2) {
 				sumdx += devs[y * x_num * 2 + (x + 1) * 2 + 0];
 				sumdy += devs[y * x_num * 2 + (x + 1) * 2 + 1];
 				n ++;
 			}
-			if (y > 0         && assign_round[(y - 1) * x_num + x] < iround) {
+			if (y > 0         && assign_round[(y - 1) * x_num + x] == 2) {
 				sumdx += devs[(y - 1) * x_num * 2 + x * 2 + 0];
 				sumdy += devs[(y - 1) * x_num * 2 + x * 2 + 1];
 				n ++;
 			}
-			if (y < y_num - 1 && assign_round[(y + 1) * x_num + x] < iround) {
+			if (y < y_num - 1 && assign_round[(y + 1) * x_num + x] == 2) {
 				sumdx += devs[(y + 1) * x_num * 2 + x * 2 + 0];
 				sumdy += devs[(y + 1) * x_num * 2 + x * 2 + 1];
 				n ++;
@@ -109,12 +109,20 @@ int main (int argc, char *argv[])
 				continue;
 			devs[y * x_num * 2 + x * 2 + 0] = sumdx / n;
 			devs[y * x_num * 2 + x * 2 + 1] = sumdy / n;
-			assign_round[y * x_num + x] = iround;
+			assign_round[y * x_num + x] = 1;
 			interpolated ++;
+			this_itpd ++;
+		}
+		if (this_itpd == 0)
+			break;
+		for (y = 0; y < y_num; y ++) for (x = 0; x < x_num; x ++) {
+			if (assign_round[y * x_num + (x - 1)] == 1)
+				assign_round[y * x_num + (x - 1)] = 2;
 		}
 	}
 	fprintf(stderr, "%d samples interpolated\n", interpolated);
 
+	fwrite(&spd, 4, 1, stdout);
 	fwrite(devs, y_num * x_num * 2 * sizeof(short), 1, stdout);
 
 	return 0;

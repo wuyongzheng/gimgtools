@@ -9,7 +9,8 @@ gimgunlock: gimgunlock.o
 
 gimgdh: gimgdh.o
 
-cmdc: cmdc.o
+cmdc: cmdc.c
+	gcc -o cmdc -Wall -lm cmdc.c
 
 .PHONY: clean
 clean:
