@@ -375,30 +375,65 @@ void dump_img (struct gimg_struct *img)
 
 void dump_subfile (struct gimg_struct *img, const char *subfile_name)
 {
-	if (strlen(subfile_name) >= 5 &&
-			strcmp(".GMP", subfile_name + strlen(subfile_name) - 4) == 0) {
-		struct submap_struct *submap;
-		for (submap = img->submaps; submap != NULL; submap = submap->next) {
-			if (memcmp(submap->name, subfile_name, strlen(submap->name)) == 0) {
-				dump_comm((struct garmin_subfile *)submap->tre->base);
-				return;
-			}
-		}
-	} else {
-		struct subfile_struct *subfile;
-		for (subfile = img->subfiles; subfile != NULL; subfile = subfile->next) {
-			if (strcmp(subfile_name, subfile->fullname) == 0) {
-				switch(subfile->typeid) {
-					case ST_TRE: dump_tre(subfile); break;
-					case ST_TYP: dump_typ(subfile); break;
-					case ST_MPS: dump_mps(subfile); break;
-					default: dump_comm(subfile->header);
-				}
-				return;
-			}
+	struct subfile_struct *subfile;
+
+	/* no extension defailts to TRE */
+	if (strchr(subfile_name, '.') == NULL) {
+		struct submap_struct *submap = get_submap(img, subfile_name);
+		if (submap) {
+			dump_tre(submap->tre);
+			return;
 		}
 	}
-	printf("subfile %s not found\n", subfile_name);
+
+	/* .GMP is a special case because it's not in img->subfiles list */
+	if (strlen(subfile_name) >= 5 &&
+			strcasecmp(".GMP", subfile_name + strlen(subfile_name) - 4) == 0) {
+		struct submap_struct *submap = get_submap(img, subfile_name);
+		if (submap) {
+			dump_comm((struct garmin_subfile *)submap->tre->base);
+			return;
+		}
+	}
+
+	subfile = get_subfile(img, subfile_name);
+	if (subfile == NULL) {
+		printf("subfile %s not found\n", subfile_name);
+		return;
+	}
+
+	switch(subfile->typeid) {
+		case ST_TRE: dump_tre(subfile); break;
+		case ST_TYP: dump_typ(subfile); break;
+		case ST_MPS: dump_mps(subfile); break;
+		default: dump_comm(subfile->header);
+	}
+}
+
+struct submap_struct *get_submap (struct gimg_struct *img, const char *mapname)
+{
+	struct submap_struct *submap;
+	if (strchr(mapname, '.') == NULL) {
+		for (submap = img->submaps; submap != NULL; submap = submap->next)
+			if (strcasecmp(mapname, submap->name) == 0)
+				return submap;
+	} else {
+		int n = strchr(mapname, '.') - mapname;
+		for (submap = img->submaps; submap != NULL; submap = submap->next) {
+			if (strncasecmp(mapname, submap->name, n) == 0 && submap->name[n] == '\0')
+				return submap;
+		}
+	}
+	return NULL;
+}
+
+struct subfile_struct *get_subfile (struct gimg_struct *img, const char *subfilename)
+{
+	struct subfile_struct *subfile;
+	for (subfile = img->subfiles; subfile != NULL; subfile = subfile->next)
+		if (strcasecmp(subfilename, subfile->fullname) == 0)
+			return subfile;
+	return NULL;
 }
 
 struct gimg_struct *gimg_open (const char *path, int readonly)
