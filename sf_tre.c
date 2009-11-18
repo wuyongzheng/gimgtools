@@ -1,4 +1,4 @@
-#include "gimginfo.h"
+#include "gimglib.h"
 
 static void dump_poverview (uint8_t *ptr, int num, int size)
 {

@@ -1,4 +1,4 @@
-#include "gimginfo.h"
+#include "gimglib.h"
 
 void dump_mps (struct subfile_struct *mps)
 {

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 
-gimginfo: gimginfo.o util.o sf_tre.o sf_typ.o sf_mps.o
+gimginfo: gimginfo.o gimglib.o util.o sf_tre.o sf_typ.o sf_mps.o
 
 gimgxor: gimgxor.o
 

@@ -1,5 +1,5 @@
-#ifndef GIMGINFO_H
-#define GIMGINFO_H
+#ifndef GIMGLIB_H
+#define GIMGLIB_H
 
 /* It's either VC in Windows or POSIX */
 #if defined(_MSC_VER) || defined(WIN32) || defined(WIN64) || defined(_WIN32) || defined(_WIN64)
@@ -66,19 +66,14 @@ struct submap_struct {
 	struct submap_struct *next;
 };
 
-extern int option_verbose;
-extern const char *option_img_path;
-extern const char *option_subfile;
-extern unsigned char *img_base;
-extern unsigned int img_size;
-extern struct subfile_struct *subfiles;
-extern struct submap_struct *submaps;
-extern struct subfile_struct *orphans; // files not belonging to any submap
-extern int subfile_num;
-extern int block_size;
-
-#define vlog(...) if (option_verbose) fprintf(stderr, "LOG: " __VA_ARGS__)
-#define warn(...) fprintf(stderr, "WARNING: " __VA_ARGS__)
+struct gimg_struct {
+	const char *path;
+	unsigned char *base;
+	unsigned int size;
+	struct subfile_struct *subfiles;
+	struct submap_struct *submaps;
+	struct subfile_struct *orphans; // files not belonging to any submap
+};
 
 static inline unsigned int bytes_to_uint24 (unsigned char *bytes) {
 	return (*(unsigned int *)bytes) & 0x00ffffff;
@@ -106,7 +101,11 @@ void dump_tre (struct subfile_struct *tre);
 /* sf_mps.c */
 void dump_mps (struct subfile_struct *mps);
 
-/* gimginfo.c */
+/* gimglib.c */
 void dump_comm (struct garmin_subfile *header);
+void dump_img (struct gimg_struct *img);
+void dump_subfile (struct gimg_struct *img, const char *subfile_name);
+struct gimg_struct *gimg_open (const char *path, int readonly);
+void gimg_close (struct gimg_struct *img);
 
 #endif

@@ -1,4 +1,4 @@
-#include "gimginfo.h"
+#include "gimglib.h"
 
 const char *sint24_to_lat (int n)
 {
