@@ -9,9 +9,11 @@ gimgunlock: gimgunlock.o
 
 gimgdh: gimgdh.o
 
+gimgextract: gimgextract.o
+
 cmdc: cmdc.c
 	gcc -o cmdc -Wall -lm cmdc.c
 
 .PHONY: clean
 clean:
-	rm -f gimginfo gimgxor gimgunlock gimgdh cmdc *.o
+	rm -f gimginfo gimgxor gimgunlock gimgdh gimgextract cmdc *.o
