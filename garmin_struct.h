@@ -46,26 +46,26 @@ struct garmin_img {
 } PACK_STRUCT ;
 
 struct garmin_fat {
-	uint8_t  flag;
-	char     name[8];
-	char     type[3];
-	uint32_t size;
-	uint16_t part;
-	uint8_t  unknown_012[14];
-	uint16_t blocks[240];
+	uint8_t  flag;            // 0x00
+	char     name[8];         // 0x01
+	char     type[3];         // 0x09
+	uint32_t size;            // 0x0c
+	uint16_t part;            // 0x10
+	uint8_t  unknown_012[14]; // 0x12
+	uint16_t blocks[240];     // 0x20
 } PACK_STRUCT ;
 
 struct garmin_subfile {
-	uint16_t hlen;
-	char     type[10];
-	uint8_t  unknown_00c;
-	uint8_t  locked;
-	uint16_t year;
-	uint8_t  month;
-	uint8_t  date;
-	uint8_t  hour;
-	uint8_t  minute;
-	uint8_t  second;
+	uint16_t hlen;        // 0x00
+	char     type[10];    // 0x02
+	uint8_t  unknown_00c; // 0x0c
+	uint8_t  locked;      // 0x0d
+	uint16_t year;        // 0x0e
+	uint8_t  month;       // 0x10
+	uint8_t  date;        // 0x11
+	uint8_t  hour;        // 0x12
+	uint8_t  minute;      // 0x13
+	uint8_t  second;      // 0x14
 } PACK_STRUCT ;
 
 struct garmin_tre {
