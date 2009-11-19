@@ -217,7 +217,7 @@ struct garmin_gmp {
 	uint32_t lbl_offset;
 	uint32_t net_offset;
 	uint32_t nod_offset;
-	uint32_t unknown_20d;
+	uint32_t unknown_02d;
 } PACK_STRUCT ;
 
 /* http://ati.land.cz/ */

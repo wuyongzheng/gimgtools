@@ -44,7 +44,6 @@ struct subfile_struct {
 	char type[4];
 	char fullname[13]; /* 8.3 */
 	enum subtype typeid;
-	int isnt; // only two cases: OF, NT
 	struct submap_struct *map;
 	struct subfile_struct *next;
 	struct subfile_struct *orphan_next;
@@ -53,16 +52,17 @@ struct subfile_struct {
 struct submap_struct {
 	char name[9];
 	union {
-		struct subfile_struct *subfiles[6];
+		struct subfile_struct *subfiles[5];
 		struct {
 			struct subfile_struct *tre; // always set.
 			struct subfile_struct *rgn;
 			struct subfile_struct *lbl;
 			struct subfile_struct *net;
 			struct subfile_struct *nod;
-			struct subfile_struct *srt;
 		};
 	};
+	struct subfile_struct *srt;
+	struct subfile_struct *gmp;
 	struct submap_struct *next;
 };
 
@@ -103,6 +103,9 @@ void dump_mps (struct subfile_struct *mps);
 
 /* sf_lbl.c */
 void dump_lbl (struct subfile_struct *sf);
+
+/* sf_gmp.c */
+void dump_gmp (struct subfile_struct *sf);
 
 /* gimglib.c */
 void dump_comm (struct garmin_subfile *header);

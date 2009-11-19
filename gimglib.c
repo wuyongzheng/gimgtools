@@ -165,7 +165,6 @@ static int parse_img (struct gimg_struct *img)
 					subfile->base = (unsigned char *)gmp;
 					subfile->offset = fat->blocks[0] * block_size;
 					subfile->size = fat->size;
-					subfile->isnt = 1;
 					memcpy(subfile->name, fat->name, 8);
 					string_trim(subfile->name, -1);
 					strncpy(subfile->type, get_subtype_name(k), 3);
@@ -181,6 +180,25 @@ static int parse_img (struct gimg_struct *img)
 					else
 						subfiles_tail = subfiles_tail->next = subfile;
 				}
+
+				/* add gmp it self */
+				subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
+				memset(subfile, 0, sizeof(struct subfile_struct));
+				subfile->header = (struct garmin_subfile *)(img->base + fat->blocks[0] * block_size);
+				subfile->base = (unsigned char *)gmp;
+				subfile->offset = fat->blocks[0] * block_size;
+				subfile->size = fat->size;
+				memcpy(subfile->name, fat->name, 8);
+				string_trim(subfile->name, -1);
+				memcpy(subfile->type, "GMP", 3);
+				sprintf(subfile->fullname, "%s.GMP", subfile->name);
+				subfile->typeid = ST_GMP;
+
+				subfile->next = NULL;
+				if (subfiles_tail == NULL)
+					subfiles_tail = subfiles = subfile;
+				else
+					subfiles_tail = subfiles_tail->next = subfile;
 			} else {
 				subfile = (struct subfile_struct *)malloc(sizeof(struct subfile_struct));
 				memset(subfile, 0, sizeof(struct subfile_struct));
@@ -188,7 +206,6 @@ static int parse_img (struct gimg_struct *img)
 				subfile->base = img->base + fat->blocks[0] * block_size;
 				subfile->offset = fat->blocks[0] * block_size;
 				subfile->size = fat->size;
-				subfile->isnt = 0;
 				memcpy(subfile->name, fat->name, 8);
 				string_trim(subfile->name, -1);
 				memcpy(subfile->type, fat->type, 3);
@@ -244,11 +261,23 @@ static int parse_img (struct gimg_struct *img)
 			else
 				orphans_tail = orphans_tail->orphan_next = subfile;
 		} else {
-			if (subfile->typeid <= ST_SRT) {
+			switch (subfile->typeid) {
+			case ST_TRE: case ST_RGN: case ST_LBL: case ST_NET: case ST_NOD:
 				if (submap->subfiles[subfile->typeid])
 					fprintf(stderr, "Warning: file %s has duplicate %s\n", subfile->name, subfile->type);
 				submap->subfiles[subfile->typeid] = subfile;
-			} else {
+				break;
+			case ST_SRT:
+				if (submap->srt)
+					fprintf(stderr, "Warning: file %s has duplicate %s\n", subfile->name, subfile->type);
+				submap->srt = subfile;
+				break;
+			case ST_GMP:
+				if (submap->gmp)
+					fprintf(stderr, "Warning: file %s has duplicate %s\n", subfile->name, subfile->type);
+				submap->gmp = subfile;
+				break;
+			default:
 				fprintf(stderr, "Warning: file %s's type %s not known\n", subfile->name, subfile->type);
 			}
 		}
@@ -329,13 +358,13 @@ void dump_img (struct gimg_struct *img)
 
 	printf("=== SUBMAPS ===\n");
 	for (submap = img->submaps; submap != NULL; submap = submap->next) {
-		if (submap->tre->isnt) {
+		if (submap->gmp) {
 			int k;
 			printf("%s: NT off=0x%x size=0x%x\n",
 					submap->name,
-					submap->tre->offset,
-					submap->tre->size);
-			for (k = 0; k < 5; k ++) {
+					submap->gmp->offset,
+					submap->gmp->size);
+			for (k = 0; k <= ST_NOD; k ++) {
 				if (submap->subfiles[k])
 					printf(" %s abs=0x%x rel=0x%x\n",
 							get_subtype_name(k),
@@ -344,27 +373,21 @@ void dump_img (struct gimg_struct *img)
 				else
 					printf(" %s NIL\n", get_subtype_name(k));
 			}
-			if (submap->srt)
-				printf(" SRT off=0x%x size=0x%x\n",
-						submap->srt->offset,
-						submap->srt->size);
-			else
-				printf(" SRT NIL\n");
 		} else { // OF
 			int k;
 			printf("%s: OF\n", submap->name);
-			for (k = 0; k <= ST_SRT; k ++) {
+			for (k = 0; k <= ST_NOD; k ++) {
 				if (submap->subfiles[k])
 					printf(" %s off=0x%x size=0x%x\n",
 							get_subtype_name(k),
 							submap->subfiles[k]->offset,
 							submap->subfiles[k]->size);
-				else {
-					if (k != ST_SRT)
-						printf(" %s NIL\n", get_subtype_name(k));
-				}
+				else
+					printf(" %s NIL\n", get_subtype_name(k));
 			}
 		}
+		if (submap->srt)
+			printf(" SRT off=0x%x size=0x%x\n", submap->srt->offset, submap->srt->size);
 	}
 	printf("=== OTHER SUBFILES ===\n");
 	for (subfile = img->orphans; subfile != NULL; subfile = subfile->orphan_next) {
@@ -386,16 +409,6 @@ void dump_subfile (struct gimg_struct *img, const char *subfile_name)
 		}
 	}
 
-	/* .GMP is a special case because it's not in img->subfiles list */
-	if (strlen(subfile_name) >= 5 &&
-			strcasecmp(".GMP", subfile_name + strlen(subfile_name) - 4) == 0) {
-		struct submap_struct *submap = get_submap(img, subfile_name);
-		if (submap) {
-			dump_comm((struct garmin_subfile *)submap->tre->base);
-			return;
-		}
-	}
-
 	subfile = get_subfile(img, subfile_name);
 	if (subfile == NULL) {
 		printf("subfile %s not found\n", subfile_name);
@@ -407,6 +420,7 @@ void dump_subfile (struct gimg_struct *img, const char *subfile_name)
 		case ST_LBL: dump_lbl(subfile); break;
 		case ST_TYP: dump_typ(subfile); break;
 		case ST_MPS: dump_mps(subfile); break;
+		case ST_GMP: dump_gmp(subfile); break;
 		default: dump_comm(subfile->header);
 	}
 }
