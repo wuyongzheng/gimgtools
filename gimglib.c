@@ -404,6 +404,7 @@ void dump_subfile (struct gimg_struct *img, const char *subfile_name)
 
 	switch(subfile->typeid) {
 		case ST_TRE: dump_tre(subfile); break;
+		case ST_LBL: dump_lbl(subfile); break;
 		case ST_TYP: dump_typ(subfile); break;
 		case ST_MPS: dump_mps(subfile); break;
 		default: dump_comm(subfile->header);

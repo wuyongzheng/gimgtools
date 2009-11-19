@@ -152,44 +152,45 @@ struct garmin_lbl {
 	uint32_t lbl2_offset;        ///< 0x0000001F .. 0x00000022
 	uint32_t lbl2_length;        ///< 0x00000023 .. 0x00000026
 	uint16_t lbl2_rec_size;      ///< 0x00000027 .. 0x00000028
-	uint8_t  byte0x00000029_0x0000002C[4];
+	uint32_t unknown_029;
 	uint32_t lbl3_offset;        ///< 0x0000002D .. 0x00000030
 	uint32_t lbl3_length;        ///< 0x00000031 .. 0x00000034
 	uint16_t lbl3_rec_size;      ///< 0x00000035 .. 0x00000036
-	uint8_t  byte0x00000037_0x0000003A[4];
+	uint32_t unknown_037;
 	uint32_t lbl4_offset;        ///< 0x0000003B .. 0x0000003E
 	uint32_t lbl4_length;        ///< 0x0000003F .. 0x00000042
 	uint16_t lbl4_rec_size;      ///< 0x00000043 .. 0x00000044
-	uint8_t  byte0x00000045_0x00000048[4];
+	uint32_t unknown_045;
 	uint32_t lbl5_offset;        ///< 0x00000049 .. 0x0000004C
 	uint32_t lbl5_length;        ///< 0x0000004D .. 0x00000050
 	uint16_t lbl5_rec_size;      ///< 0x00000051 .. 0x00000052
-	uint8_t  byte0x00000053_0x00000056[4];
+	uint32_t unknown_053;
 	uint32_t lbl6_offset;        ///< 0x00000057 .. 0x0000005A
 	uint32_t lbl6_length;        ///< 0x0000005B .. 0x0000005E
 	uint8_t  lbl6_addr_shift;    ///< 0x0000005F
 	uint8_t  lbl6_glob_mask;     ///< 0x00000060
-	uint8_t  byte0x00000061_0x00000063[3];
+	uint8_t  unknown_061[3];
 	uint32_t lbl7_offset;        ///< 0x00000064 .. 0x00000067
 	uint32_t lbl7_length;        ///< 0x00000068 .. 0x0000006B
 	uint16_t lbl7_rec_size;      ///< 0x0000006C .. 0x0000006D
-	uint8_t  byte0x0000006E_0x00000071[4];
+	uint32_t unknown_06e;
 	uint32_t lbl8_offset;        ///< 0x00000072 .. 0x00000075
 	uint32_t lbl8_length;        ///< 0x00000076 .. 0x00000079
 	uint16_t lbl8_rec_size;      ///< 0x0000007A .. 0x0000007B
-	uint8_t  byte0x0000007C_0x0000007F[4];
+	uint32_t unknown_07c;
 	uint32_t lbl9_offset;        ///< 0x00000080 .. 0x00000083
 	uint32_t lbl9_length;        ///< 0x00000084 .. 0x00000087
 	uint16_t lbl9_rec_size;      ///< 0x00000088 .. 0x00000089
-	uint8_t  byte0x0000008A_0x0000008D[4];
+	uint32_t unknown_08a;
 	uint32_t lbl10_offset;       ///< 0x0000008E .. 0x00000091
 	uint32_t lbl10_length;       ///< 0x00000092 .. 0x00000095
 	uint16_t lbl10_rec_size;     ///< 0x00000096 .. 0x00000097
-	uint8_t  byte0x00000098_0x0000009B[4];
+	uint32_t unknown_098;
 	uint32_t lbl11_offset;       ///< 0x0000009C .. 0x0000009F
 	uint32_t lbl11_length;       ///< 0x000000A0 .. 0x000000A3
 	uint16_t lbl11_rec_size;     ///< 0x000000A4 .. 0x000000A5
-	uint8_t  byte0x000000A6_0x000000AB[4];
+	uint32_t unknown_0a6;
+	/* break */
 	uint16_t codepage;           ///< 0x000000AA .. 0x000000AB  optional check length
 } PACK_STRUCT ;
 

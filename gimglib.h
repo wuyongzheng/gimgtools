@@ -101,6 +101,9 @@ void dump_tre (struct subfile_struct *tre);
 /* sf_mps.c */
 void dump_mps (struct subfile_struct *mps);
 
+/* sf_lbl.c */
+void dump_lbl (struct subfile_struct *sf);
+
 /* gimglib.c */
 void dump_comm (struct garmin_subfile *header);
 void dump_img (struct gimg_struct *img);
