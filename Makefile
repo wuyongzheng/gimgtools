@@ -7,7 +7,7 @@ gimgxor: gimgxor.o
 
 gimgunlock: gimgunlock.o
 
-gimgdh: gimgdh.o
+gimgch: gimgch.o
 
 gimgextract: gimgextract.o
 
@@ -16,4 +16,4 @@ cmdc: cmdc.c
 
 .PHONY: clean
 clean:
-	rm -f gimginfo gimgxor gimgunlock gimgdh gimgextract cmdc *.o
+	rm -f gimginfo gimgxor gimgunlock gimgch gimgextract cmdc *.o

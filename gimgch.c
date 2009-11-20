@@ -16,7 +16,6 @@ struct header_struct {
 	char id[4];
 };
 
-static int line_columns;
 #define MAX_HEADERS 8192
 static struct header_struct *headers[MAX_HEADERS];
 static int header_num = 0;
@@ -71,7 +70,7 @@ static void read_bytes_at (FILE *fp, unsigned long offset, unsigned char *buffer
 	}
 }
 
-static void display_headers (void)
+static void display_headers (int line_columns)
 {
 	int i, ptr, bytes_pre_line;
 	char emptyid[4];
@@ -96,7 +95,7 @@ static void display_headers (void)
 	emptyid[strlen(headers[0]->id)] = '\0';
 
 	for (i = 0; i < header_num; i ++) {
-		printf("%s foff=%8x flen=%8x hoff=%4x hlen=%4x %s %s\n",
+		printf("%s %8x=foff %8x=flen %4x=hoff %4x=hlen %s %s\n",
 				headers[i]->id,
 				headers[i]->subfile_offset,
 				headers[i]->subfile_size,
@@ -165,20 +164,39 @@ static void display_headers (void)
 	}
 }
 
+static int add_header(FILE *fp, const char *imgpath, const char *sf_name,
+		int subfile_offset, int subfile_size, int header_rel_offset)
+{
+	struct header_struct *header = (struct header_struct *)malloc(sizeof(struct header_struct));
+	header->imgpath = imgpath;
+	strcpy(header->subfile, sf_name);
+	header->subfile_offset = subfile_offset;
+	header->subfile_size = subfile_size;
+	header->header_rel_offset = header_rel_offset;
+
+	header->header_size = read_2byte_at(fp, subfile_offset + header_rel_offset);
+	if (header->header_size < 0x15) {
+		printf("wrong header size %d\n", header->header_size);
+		return 1;
+	}
+
+	header->header = (unsigned char *)malloc(header->header_size);
+	read_bytes_at(fp, subfile_offset + header_rel_offset, header->header, header->header_size);
+
+	if (header_num >= MAX_HEADERS) {
+		printf("too many files\n");
+		return 1;
+	}
+	headers[header_num ++] = header;
+	return 0;
+}
+
 #define errexit(...) do {printf(__VA_ARGS__); if (fp) fclose(fp); return 1;} while (0)
-static int read_header (const char *imgpath, const char *subfile)
+static int read_header (const char *imgpath, const char *subfile_name_pattern, int match_all)
 {
 	FILE *fp = NULL;
 	int block_size, fatstart, fatend, fatcount;
-	char subfile_name[16], *subfile_type;
 	int added = 0;
-
-	strncpy(subfile_name, subfile, sizeof(subfile_name));
-	subfile_name[sizeof(subfile_name) - 1] = '\0';
-	if (strchr(subfile_name, '.') == NULL)
-		errexit("wrong subfile name %s\n", subfile);
-	subfile_type = strchr(subfile_name, '.') + 1;
-	strchr(subfile_name, '.')[0] = '\0';
 
 	fp = fopen(imgpath, "rb");
 	if (fp == NULL)
@@ -211,97 +229,96 @@ static int read_header (const char *imgpath, const char *subfile)
 	}
 
 	for (fatcount = fatstart; fatcount < fatend; fatcount ++) {
-		unsigned long offset = fatcount * 512, header_rel_offset, subfile_offset;
-		char curr_subfile_name[9], curr_subfile_type[4];
-		struct header_struct *header;
+		unsigned long offset = fatcount * 512, subfile_offset, subfile_size;
+		char sf_name[16];
 
 		if (read_byte_at(fp, offset) != 1)
 			continue;
 		if (read_byte_at(fp, offset + 0x1) == ' ') /* rootdir */
 			continue;
-		if (read_2byte_at(fp, offset + 0x10) != 0)
+		if (read_2byte_at(fp, offset + 0x10) != 0) /* part != 0 */
 			continue;
 
-		read_bytes_at(fp, offset + 0x1, (unsigned char *)curr_subfile_name, 8);
-		curr_subfile_name[8] = '\0';
-		if (strchr(curr_subfile_name, ' '))
-			strchr(curr_subfile_name, ' ')[0] = '\0';
-		read_bytes_at(fp, offset + 0x9, (unsigned char *)curr_subfile_type, 3);
-		curr_subfile_type[3] = '\0';
-		if (strchr(curr_subfile_type, ' '))
-			strchr(curr_subfile_type, ' ')[0] = '\0';
+		/* make up sf_name */
+		memset(sf_name, 0, sizeof(sf_name));
+		read_bytes_at(fp, offset + 0x1, (unsigned char *)sf_name, 8);
+		if (strchr(sf_name, ' ') != NULL)
+			strchr(sf_name, ' ')[0] = '\0';
+		strcat(sf_name, ".");
+		read_bytes_at(fp, offset + 0x9, (unsigned char *)sf_name + strlen(sf_name), 3);
+		if (strchr(sf_name, ' ') != NULL)
+			strchr(sf_name, ' ')[0] = '\0';
+		if (strchr(sf_name, '/') != NULL || strchr(sf_name, '\\') != NULL) /* a simple security check */
+			errexit("invalid subfile name %s\n", sf_name);
 
-		if (subfile_name[0] != '\0' && strcasecmp(curr_subfile_name, subfile_name) != 0)
-			continue;
-		if (strcasecmp(curr_subfile_type, subfile_type) == 0) {
-			subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
-			header_rel_offset = 0;
-		} else if (strcmp(curr_subfile_type, "GMP") == 0) {
-			subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
-			if (read_byte_at(fp, subfile_offset + 0x2) != 'G' ||
-					read_byte_at(fp, subfile_offset + 0x9) != 'G' ||
-					read_byte_at(fp, subfile_offset + 0xa) != 'M' ||
-					read_byte_at(fp, subfile_offset + 0xb) != 'P')
+		subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
+		subfile_size = read_4byte_at(fp, offset + 0xc);
+
+		if (subfile_name_pattern == NULL || strstr(sf_name, subfile_name_pattern)) {
+			/* header integrity test */
+			if (read_byte_at(fp, subfile_offset + 2) != 'G' ||
+					read_byte_at(fp, subfile_offset + 3) != 'A' ||
+					read_byte_at(fp, subfile_offset + 4) != 'R') {
+				if (!strstr(sf_name, ".MPS")) /* I know MPS doesn't have proper header */
+					printf("warning: %s has invalid header\n", sf_name);
 				continue;
-			if (strcasecmp(subfile_type, "TRE") == 0)
-				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x19);
-			else if (strcasecmp(subfile_type, "RGN") == 0)
-				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x1d);
-			else if (strcasecmp(subfile_type, "LBL") == 0)
-				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x21);
-			else if (strcasecmp(subfile_type, "NET") == 0)
-				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x25);
-			else if (strcasecmp(subfile_type, "NOD") == 0)
-				header_rel_offset = read_4byte_at(fp, subfile_offset + 0x29);
-			if (header_rel_offset == 0)
-				continue;
-		} else {
-			continue;
+			}
+			if (add_header(fp, imgpath, sf_name, subfile_offset, subfile_size, 0))
+				errexit("add_header failed\n");
+			added ++;
+			if (!match_all)
+				goto out;
 		}
 
-		header = (struct header_struct *)malloc(sizeof(struct header_struct));
-		header->imgpath = imgpath;
-		strcpy(header->subfile, curr_subfile_name);
-		strcat(header->subfile, ".");
-		strcat(header->subfile, curr_subfile_type);
-		header->header_rel_offset = header_rel_offset;
-		header->subfile_offset = subfile_offset;
-		header->subfile_size = read_4byte_at(fp, offset + 0xc);
-
-		header->header_size = read_2byte_at(fp, header->subfile_offset + header->header_rel_offset);
-		if (header->header_size < 0x15)
-			errexit("wrong header size %d\n", header->header_size);
-
-		header->header = (unsigned char *)malloc(header->header_size);
-		read_bytes_at(fp, header->subfile_offset + header->header_rel_offset, header->header, header->header_size);
-
-		if (header_num >= MAX_HEADERS)
-			errexit("too many files\n");
-		headers[header_num ++] = header;
-		added ++;
+		if (strstr(sf_name, ".GMP")) {
+			static const char *exts[] = {".TRE", ".RGN", ".LBL", ".NET", ".NOD"};
+			static const int offs[] = {0x19, 0x1d, 0x21, 0x25, 0x29};
+			int i;
+			for (i = 0; i < 5; i ++) {
+				char sf_new_name[16];
+				int header_rel_offset;
+				strcpy(sf_new_name, sf_name);
+				strcpy(strstr(sf_new_name, ".GMP"), exts[i]);
+				if (subfile_name_pattern != NULL && strstr(sf_new_name, subfile_name_pattern) == NULL)
+					continue;
+				header_rel_offset = read_4byte_at(fp, subfile_offset + offs[i]);
+				if (header_rel_offset == 0)
+					continue;
+				if (add_header(fp, imgpath, sf_new_name, subfile_offset, subfile_size, header_rel_offset))
+					errexit("add_header failed\n");
+				added ++;
+				if (!match_all)
+					goto out;
+			}
+		}
 	}
 
 	if (added == 0)
-		errexit("cannot find %s %s\n", imgpath, subfile);
-
+		printf("no matching subfile found in %s\n", imgpath);
+out:
 	fclose(fp);
 	return 0;
 }
 
 static void usage (void)
 {
-	printf("Usage: gimgdh [-w columns] file1.img subfile1 [file2.img subfile2] ...\n");
+	printf("Usage: gimgch [-w columns] [-a] [-s subfile_name_pattern] file1.img file2.img ...\n");
 }
 
 int main (int argc, char *argv[])
 {
+	int line_columns;
+	#define MAX_IMGS 1024
+	char *imgs[MAX_IMGS];
+	int img_num = 0;
+	char *subfile_name_pattern = NULL;
+	int match_all = 0;
 	int i;
 
 	/* default line_columns */
 	if (isatty(1)) {
 		struct winsize w;
 		ioctl(1, TIOCGWINSZ, &w);
-		printf("%x\n", w.ws_col);
 		line_columns = w.ws_col;
 	} else {
 		line_columns = 80;
@@ -319,29 +336,43 @@ int main (int argc, char *argv[])
 				return 1;
 			}
 			line_columns = atoi(argv[++ i]);
+		} else if (strcmp("-a", argv[i]) == 0) {
+			match_all = 1;
+		} else if (strcmp("-s", argv[i]) == 0) {
+			char *ptr;
+			if (i + 1 >= argc) {
+				usage();
+				return 1;
+			}
+			subfile_name_pattern = argv[++ i];
+			for (ptr = subfile_name_pattern; *ptr; ptr ++)
+				if (*ptr >= 'a' && *ptr <= 'z')
+					*ptr += 'A' - 'a';
 		} else if (argv[i][0] == '-') {
 			printf("unknown option %s\n", argv[i]);
 			usage();
 			return 1;
 		} else {
-			if (i + 1 >= argc) {
-				printf("file.img and subfile are always in pairs\n");
-				usage();
-				return 1;
-			}
-			if (read_header(argv[i], argv[i+1]))
-				return 1;
-			i ++;
+			imgs[img_num ++] = argv[i];
 		}
 	}
 
-	if (header_num == 0) {
+	if (img_num == 0) {
 		printf("no files to examine\n");
 		usage();
 		return 1;
 	}
 
-	display_headers();
+	for (i = 0; i < img_num; i ++)
+		if (read_header(imgs[i], subfile_name_pattern, match_all))
+			return 1;
+
+	if (header_num == 0) {
+		printf("no subfile found\n");
+		return 1;
+	}
+
+	display_headers(line_columns);
 
 	return 0;
 }
