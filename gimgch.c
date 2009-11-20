@@ -192,7 +192,7 @@ static int add_header(FILE *fp, const char *imgpath, const char *sf_name,
 }
 
 #define errexit(...) do {printf(__VA_ARGS__); if (fp) fclose(fp); return 1;} while (0)
-static int read_header (const char *imgpath, const char *subfile_name_pattern, int match_all)
+static int read_header (const char *imgpath, const char *subfile_name_pattern, int match_maximum)
 {
 	FILE *fp = NULL;
 	int block_size, fatstart, fatend, fatcount;
@@ -266,7 +266,7 @@ static int read_header (const char *imgpath, const char *subfile_name_pattern, i
 			if (add_header(fp, imgpath, sf_name, subfile_offset, subfile_size, 0))
 				errexit("add_header failed\n");
 			added ++;
-			if (!match_all)
+			if (match_maximum && added >= match_maximum)
 				goto out;
 		}
 
@@ -287,7 +287,7 @@ static int read_header (const char *imgpath, const char *subfile_name_pattern, i
 				if (add_header(fp, imgpath, sf_new_name, subfile_offset, subfile_size, header_rel_offset))
 					errexit("add_header failed\n");
 				added ++;
-				if (!match_all)
+				if (match_maximum && added >= match_maximum)
 					goto out;
 			}
 		}
@@ -302,7 +302,7 @@ out:
 
 static void usage (void)
 {
-	printf("Usage: gimgch [-w columns] [-a] [-s subfile_name_pattern] file1.img file2.img ...\n");
+	printf("Usage: gimgch [-w columns] [-m max_sf_per_img] [-s subfile_name_pattern] file1.img file2.img ...\n");
 }
 
 int main (int argc, char *argv[])
@@ -312,7 +312,7 @@ int main (int argc, char *argv[])
 	char *imgs[MAX_IMGS];
 	int img_num = 0;
 	char *subfile_name_pattern = NULL;
-	int match_all = 0;
+	int match_maximum = 1;
 	int i;
 
 	/* default line_columns */
@@ -336,8 +336,12 @@ int main (int argc, char *argv[])
 				return 1;
 			}
 			line_columns = atoi(argv[++ i]);
-		} else if (strcmp("-a", argv[i]) == 0) {
-			match_all = 1;
+		} else if (strcmp("-m", argv[i]) == 0) {
+			if (i + 1 >= argc) {
+				usage();
+				return 1;
+			}
+			match_maximum = atoi(argv[++ i]);
 		} else if (strcmp("-s", argv[i]) == 0) {
 			char *ptr;
 			if (i + 1 >= argc) {
@@ -364,7 +368,7 @@ int main (int argc, char *argv[])
 	}
 
 	for (i = 0; i < img_num; i ++)
-		if (read_header(imgs[i], subfile_name_pattern, match_all))
+		if (read_header(imgs[i], subfile_name_pattern, match_maximum))
 			return 1;
 
 	if (header_num == 0) {
