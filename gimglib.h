@@ -104,6 +104,9 @@ void dump_mps (struct subfile_struct *mps);
 /* sf_lbl.c */
 void dump_lbl (struct subfile_struct *sf);
 
+/* sf_nod.c */
+void dump_nod (struct subfile_struct *sf);
+
 /* sf_gmp.c */
 void dump_gmp (struct subfile_struct *sf);
 

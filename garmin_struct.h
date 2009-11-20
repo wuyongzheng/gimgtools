@@ -206,10 +206,44 @@ struct garmin_net {
 	// Segmented roads
 	uint32_t net2_offset;        ///< 0x0000001E .. 0x00000021
 	uint32_t net2_length;        ///< 0x00000022 .. 0x00000025
-	uint8_t  net2_addr_shift;     ///< 0x00000026
+	uint8_t  net2_addr_shift;    ///< 0x00000026
 	// Sorted Roads
 	uint32_t net3_offset;        ///< 0x00000027 .. 0x0000002A
 	uint32_t net3_length;        ///< 0x0000002B .. 0x0000002E
+} PACK_STRUCT ;
+
+struct garmin_nod
+{
+	struct garmin_subfile comm;
+	uint32_t nod1_offset;        // 0x15
+	uint32_t nod1_length;        // 0x19
+	uint8_t  nod_bits[4];        // 0x1d
+	uint8_t  align;              // 0x21
+	uint8_t  unknown_025;        // 0x22
+	uint16_t roadptrsize;        // 0x23
+	uint32_t nod2_offset;        // 0x25 Road data
+	uint32_t nod2_length;        // 0x29
+	uint32_t unknown_02d;        // 0x2d
+	uint32_t nod3_offset;        // 0x31 Boundary nodes
+	uint32_t nod3_length;        // 0x35
+	uint16_t nod3_recsize;       // 0x39 {9, a}
+	uint32_t unknown_03c;        // 0x3c {0, 2}
+	/* break */
+	uint32_t nod4_offset;        // 0x3f
+	uint32_t nod4_length;        // 0x43
+	uint32_t unknown_047;        // 0x47
+	uint32_t unknown_04b;        // 0x4b
+	uint32_t unknown_04f;        // 0x4f
+	uint32_t unknown_053;        // 0x53
+	uint32_t unknown_057;        // 0x57
+	uint8_t  unknown_05b[12];    // 0x5b-0x66
+	uint32_t nod5_offset;        // 0x67
+	uint32_t nod5_length;        // 0x6b
+	uint16_t nod5_recsize;       // 0x6f
+	uint32_t nod6_offset;        // 0x71
+	uint32_t nod6_length;        // 0x75
+	uint16_t nod6_recsize;       // 0x79
+	uint32_t unknown_07b;        // 0x7b
 } PACK_STRUCT ;
 
 struct garmin_gmp {
