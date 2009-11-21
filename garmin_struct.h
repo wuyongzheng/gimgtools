@@ -141,9 +141,22 @@ struct garmin_tre_subdiv {
 } PACK_STRUCT ;
 
 struct garmin_rgn {
-	struct garmin_subfile comm;
-	uint32_t data_off;
-	uint32_t data_len;
+	struct garmin_subfile comm; // 0x000
+	uint32_t rgn1_offset;       // 0x015
+	uint32_t rgn1_length;       // 0x019
+	/* break */
+	uint32_t rgn2_offset;       // 0x01d
+	uint32_t rgn2_length;       // 0x021
+	uint8_t  unknown_025[20];   // 0x025
+	uint32_t rgn3_offset;       // 0x039
+	uint32_t rgn3_length;       // 0x03d
+	uint8_t  unknown_041[20];   // 0x041
+	uint32_t rgn4_offset;       // 0x055
+	uint32_t rgn4_length;       // 0x059
+	uint8_t  unknown_05d[20];   // 0x05d
+	uint32_t rgn5_offset;       // 0x071
+	uint32_t rgn5_length;       // 0x075
+	uint32_t unknown_079;       // 0x079
 } PACK_STRUCT ;
 
 struct garmin_lbl {
@@ -299,14 +312,32 @@ struct garmin_net {
 	// NET1 Road definitions
 	uint32_t net1_offset;        ///< 0x00000015 .. 0x00000018
 	uint32_t net1_length;        ///< 0x00000019 .. 0x0000001C
-	uint8_t  net1_addr_shift;    ///< 0x0000001D
+	uint8_t  net1_shift;         ///< 0x0000001D
 	// Segmented roads
 	uint32_t net2_offset;        ///< 0x0000001E .. 0x00000021
 	uint32_t net2_length;        ///< 0x00000022 .. 0x00000025
-	uint8_t  net2_addr_shift;    ///< 0x00000026
+	uint8_t  net2_shift;         ///< 0x00000026
 	// Sorted Roads
 	uint32_t net3_offset;        ///< 0x00000027 .. 0x0000002A
 	uint32_t net3_length;        ///< 0x0000002B .. 0x0000002E
+	uint16_t net3_recsize;       // 0x2f
+	uint32_t unknown_031;        // 0x31
+	uint16_t unknown_035;        // 0x35
+	/* break */
+	uint32_t unknown_037;        // 0x37
+	/* break */
+	uint32_t unknown_03b;        // 0x3b
+	uint32_t unknown_03f;        // 0x3f
+	uint32_t net4_offset;        // 0x43
+	uint32_t net4_length;        // 0x47
+	uint8_t  net4_u;             // 0x4b
+	uint32_t net5_offset;        // 0x4c
+	uint32_t net5_length;        // 0x50
+	uint16_t net5_recsize;       // 0x54
+	uint32_t net6_offset;        // 0x56
+	uint32_t net6_length;        // 0x5a
+	uint16_t net6_recsize;       // 0x5e
+	uint32_t unknown_060;        // 0x60
 } PACK_STRUCT ;
 
 struct garmin_nod

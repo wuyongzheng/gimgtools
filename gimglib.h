@@ -93,16 +93,22 @@ const char *get_subtype_name (enum subtype id);
 void string_trim (char *str, int length);
 
 /* sf_typ.c */
-void dump_typ (struct subfile_struct *typ);
-
-/* sf_tre.c */
-void dump_tre (struct subfile_struct *tre);
+void dump_typ (struct subfile_struct *sf);
 
 /* sf_mps.c */
-void dump_mps (struct subfile_struct *mps);
+void dump_mps (struct subfile_struct *sf);
+
+/* sf_tre.c */
+void dump_tre (struct subfile_struct *sf);
+
+/* sf_rgn.c */
+void dump_rgn (struct subfile_struct *sf);
 
 /* sf_lbl.c */
 void dump_lbl (struct subfile_struct *sf);
+
+/* sf_net.c */
+void dump_net (struct subfile_struct *sf);
 
 /* sf_nod.c */
 void dump_nod (struct subfile_struct *sf);
