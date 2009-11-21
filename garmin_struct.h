@@ -154,47 +154,144 @@ struct garmin_lbl {
 	uint8_t  coding;             ///< 0x0000001E
 	uint32_t lbl2_offset;        ///< 0x0000001F .. 0x00000022
 	uint32_t lbl2_length;        ///< 0x00000023 .. 0x00000026
-	uint16_t lbl2_rec_size;      ///< 0x00000027 .. 0x00000028
-	uint32_t unknown_029;
+	uint16_t lbl2_recsize;       ///< 0x00000027 .. 0x00000028
+	uint32_t lbl2_u;
 	uint32_t lbl3_offset;        ///< 0x0000002D .. 0x00000030
 	uint32_t lbl3_length;        ///< 0x00000031 .. 0x00000034
-	uint16_t lbl3_rec_size;      ///< 0x00000035 .. 0x00000036
-	uint32_t unknown_037;
+	uint16_t lbl3_recsize;       ///< 0x00000035 .. 0x00000036
+	uint32_t lbl3_u;
 	uint32_t lbl4_offset;        ///< 0x0000003B .. 0x0000003E
 	uint32_t lbl4_length;        ///< 0x0000003F .. 0x00000042
-	uint16_t lbl4_rec_size;      ///< 0x00000043 .. 0x00000044
-	uint32_t unknown_045;
+	uint16_t lbl4_recsize;       ///< 0x00000043 .. 0x00000044
+	uint32_t lbl4_u;
 	uint32_t lbl5_offset;        ///< 0x00000049 .. 0x0000004C
 	uint32_t lbl5_length;        ///< 0x0000004D .. 0x00000050
-	uint16_t lbl5_rec_size;      ///< 0x00000051 .. 0x00000052
-	uint32_t unknown_053;
+	uint16_t lbl5_recsize;       ///< 0x00000051 .. 0x00000052
+	uint32_t lbl5_u;
 	uint32_t lbl6_offset;        ///< 0x00000057 .. 0x0000005A
 	uint32_t lbl6_length;        ///< 0x0000005B .. 0x0000005E
 	uint8_t  lbl6_addr_shift;    ///< 0x0000005F
 	uint8_t  lbl6_glob_mask;     ///< 0x00000060
-	uint8_t  unknown_061[3];
+	uint8_t  lbl6_u[3];
 	uint32_t lbl7_offset;        ///< 0x00000064 .. 0x00000067
 	uint32_t lbl7_length;        ///< 0x00000068 .. 0x0000006B
-	uint16_t lbl7_rec_size;      ///< 0x0000006C .. 0x0000006D
-	uint32_t unknown_06e;
+	uint16_t lbl7_recsize;       ///< 0x0000006C .. 0x0000006D
+	uint32_t lbl7_u;
 	uint32_t lbl8_offset;        ///< 0x00000072 .. 0x00000075
 	uint32_t lbl8_length;        ///< 0x00000076 .. 0x00000079
-	uint16_t lbl8_rec_size;      ///< 0x0000007A .. 0x0000007B
-	uint32_t unknown_07c;
+	uint16_t lbl8_recsize;       ///< 0x0000007A .. 0x0000007B
+	uint32_t lbl8_u;
 	uint32_t lbl9_offset;        ///< 0x00000080 .. 0x00000083
 	uint32_t lbl9_length;        ///< 0x00000084 .. 0x00000087
-	uint16_t lbl9_rec_size;      ///< 0x00000088 .. 0x00000089
-	uint32_t unknown_08a;
+	uint16_t lbl9_recsize;       ///< 0x00000088 .. 0x00000089
+	uint32_t lbl9_u;
 	uint32_t lbl10_offset;       ///< 0x0000008E .. 0x00000091
 	uint32_t lbl10_length;       ///< 0x00000092 .. 0x00000095
-	uint16_t lbl10_rec_size;     ///< 0x00000096 .. 0x00000097
-	uint32_t unknown_098;
+	uint16_t lbl10_recsize;      ///< 0x00000096 .. 0x00000097
+	uint32_t lbl10_u;
 	uint32_t lbl11_offset;       ///< 0x0000009C .. 0x0000009F
 	uint32_t lbl11_length;       ///< 0x000000A0 .. 0x000000A3
-	uint16_t lbl11_rec_size;     ///< 0x000000A4 .. 0x000000A5
-	uint32_t unknown_0a6;
-	/* break */
-	uint16_t codepage;           ///< 0x000000AA .. 0x000000AB  optional check length
+	uint16_t lbl11_recsize;      ///< 0x000000A4 .. 0x000000A5
+	uint32_t lbl11_u;            ///< 0x000000A6 .. 0x000000A9 break
+	uint16_t codepage;           // 0x0aa
+	uint16_t codepage2;          // 0x0ac
+	uint16_t codepage3;          // 0x0ae
+	uint32_t lbl12_offset;       // 0x0b0
+	uint32_t lbl12_length;       // 0x0b4
+	uint32_t lbl13_offset;       // 0x0b8
+	uint32_t lbl13_length;       // 0x0bc
+	uint16_t lbl13_recsize;      // 0x0c0
+	uint16_t lbl13_u;            // 0x0c2
+	uint32_t lbl14_offset;       // 0x0c4
+	uint32_t lbl14_length;       // 0x0c8
+	uint16_t lbl14_recsize;      // 0x0cc
+	uint16_t lbl14_u;            // 0x0ce
+	uint32_t lbl15_offset;       // 0x0d0
+	uint32_t lbl15_length;       // 0x0d4
+	uint16_t lbl15_recsize;      // 0x0d8
+	uint32_t lbl15_u;            // 0x0da
+	uint32_t lbl16_offset;       // 0x0de
+	uint32_t lbl16_length;       // 0x0e2
+	uint16_t lbl16_recsize;      // 0x0e6
+	uint32_t lbl16_u;            // 0x0e8
+	uint32_t lbl17_offset;       // 0x0ec
+	uint32_t lbl17_length;       // 0x0f0
+	uint16_t lbl17_recsize;      // 0x0f4
+	uint32_t lbl17_u;            // 0x0f6
+	uint32_t lbl18_offset;       // 0x0fa
+	uint32_t lbl18_length;       // 0x0fe
+	uint16_t lbl18_recsize;      // 0x102
+	uint32_t lbl18_u;            // 0x104
+	uint32_t lbl19_offset;       // 0x108
+	uint32_t lbl19_length;       // 0x10c
+	uint16_t lbl19_recsize;      // 0x110
+	uint32_t lbl19_u;            // 0x112
+	uint32_t lbl20_offset;       // 0x116
+	uint32_t lbl20_length;       // 0x11a
+	uint16_t lbl20_recsize;      // 0x11e
+	uint32_t lbl20_u;            // 0x120
+	uint32_t lbl21_offset;       // 0x124
+	uint32_t lbl21_length;       // 0x128
+	uint16_t lbl21_recsize;      // 0x12c
+	uint32_t lbl21_u;            // 0x12e
+	uint32_t lbl22_offset;       // 0x132
+	uint32_t lbl22_length;       // 0x136
+	uint16_t lbl22_recsize;      // 0x13a
+	uint32_t lbl22_u;            // 0x13c
+	uint32_t lbl23_offset;       // 0x140
+	uint32_t lbl23_length;       // 0x144
+	uint16_t lbl23_recsize;      // 0x148
+	uint32_t lbl23_u;            // 0x14a
+	uint32_t lbl24_offset;       // 0x14e
+	uint32_t lbl24_length;       // 0x152
+	uint16_t lbl24_recsize;      // 0x156
+	uint16_t lbl24_u;            // 0x158
+	uint32_t lbl25_offset;       // 0x15a
+	uint32_t lbl25_length;       // 0x15e
+	uint16_t lbl25_recsize;      // 0x162
+	uint32_t lbl25_u;            // 0x164
+	uint32_t lbl26_offset;       // 0x168
+	uint32_t lbl26_length;       // 0x16c
+	uint16_t lbl26_recsize;      // 0x170
+	uint32_t lbl26_u;            // 0x172
+	uint32_t lbl27_offset;       // 0x176
+	uint32_t lbl27_length;       // 0x17a
+	uint16_t lbl27_recsize;      // 0x17e
+	uint32_t lbl27_u;            // 0x180
+	uint32_t lbl28_offset;       // 0x184
+	uint32_t lbl28_length;       // 0x188
+	uint16_t lbl28_recsize;      // 0x18c
+	uint32_t lbl28_u;            // 0x18e
+	uint32_t lbl29_offset;       // 0x192
+	uint32_t lbl29_length;       // 0x196
+	uint32_t lbl30_offset;       // 0x19a
+	uint32_t lbl30_length;       // 0x19e
+	uint16_t lbl30_recsize;      // 0x1a2
+	uint16_t lbl30_u;            // 0x1a4
+	uint32_t lbl31_offset;       // 0x1a6
+	uint32_t lbl31_length;       // 0x1aa
+	uint16_t lbl31_recsize;      // 0x1ae
+	uint16_t lbl31_u;            // 0x1b0
+	uint32_t lbl32_offset;       // 0x1b2
+	uint32_t lbl32_length;       // 0x1b6
+	uint16_t lbl32_recsize;      // 0x1ba
+	uint16_t lbl32_u;            // 0x1bc
+	uint32_t lbl33_offset;       // 0x1be
+	uint32_t lbl33_length;       // 0x1c2
+	uint16_t lbl33_recsize;      // 0x1c6
+	uint16_t lbl33_u;            // 0x1c8
+	uint32_t lbl34_offset;       // 0x1ca
+	uint32_t lbl34_length;       // 0x1ce
+	uint16_t lbl34_recsize;      // 0x1d2
+	uint32_t lbl34_u;            // 0x1d4
+	uint32_t lbl35_offset;       // 0x1d8
+	uint32_t lbl35_length;       // 0x1dc
+	uint16_t lbl35_recsize;      // 0x1e0
+	uint32_t lbl35_u;            // 0x1e2
+	uint32_t lbl36_offset;       // 0x1e6
+	uint32_t lbl36_length;       // 0x1ea
+	uint16_t lbl36_recsize;      // 0x1ee
+	uint16_t lbl36_u;            // 0x1f0
 } PACK_STRUCT ;
 
 struct garmin_net {
