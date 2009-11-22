@@ -4,13 +4,15 @@
 //#define warn(...) fprintf(stderr, "WARNING: " __VA_ARGS__)
 
 #ifdef GT_POSIX
-static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned int *psize)
+static int map_img (const char *path, int writable, uint8_t **pbase, unsigned int *psize)
 {
 	int img_fd;
 	struct stat sb;
 	uint8_t *base;
 
-	img_fd = open(path, readonly ? O_RDONLY : O_RDWR);
+	assert((writable & 1) == writable);
+
+	img_fd = open(path, writable ? O_RDWR: O_RDONLY);
 	if (img_fd == -1) {
 		fprintf(stderr, "cannot open file %s\n", path);
 		return 1;
@@ -26,7 +28,7 @@ static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned in
 	}
 	//vlog("file size = %u\n", img_size);
 
-	base = mmap(NULL, sb.st_size, readonly ? PROT_READ : PROT_READ | PROT_WRITE,
+	base = mmap(NULL, sb.st_size, PROT_READ | (PROT_WRITE * writable),
 			MAP_PRIVATE, img_fd, 0);
 	if (base == MAP_FAILED) {
 		fprintf(stderr, "cannot map file %s into memory\n", path);
@@ -45,13 +47,15 @@ static void unmap_img (uint8_t *base, unsigned int size)
 	munmap(base, size);
 }
 #else
-static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned int *psize)
+static int map_img (const char *path, int writable, uint8_t **pbase, unsigned int *psize)
 {
 	HANDLE hfile, hmapping;
 	uint8_t *base;
 	unsigned int size;
 
-	hfile = CreateFile(path, readonly ? GENERIC_READ : GENERIC_READ | GENERIC_WRITE,
+	assert((writable & 1) == writable);
+
+	hfile = CreateFile(path, GENERIC_READ | (GENERIC_WRITE * writable),
 			FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
 		fprintf(stderr, "cannot open file %s\n", path);
@@ -70,13 +74,13 @@ static int map_img (const char *path, int readonly, uint8_t **pbase, unsigned in
 	//vlog("file size = %u\n", size);
 
 	hmapping = CreateFileMapping(hfile, NULL,
-			readonly ? PAGE_READONLY : PAGE_READWRITE,
+			writable ? PAGE_READWRITE : PAGE_READONLY,
 			0, 0, NULL);
 	if (hmapping == NULL) {
 		fprintf(stderr, "cannot map (1) file %s into memory\n", path);
 		return 1;
 	}
-	base = MapViewOfFile(hmapping, readonly ? FILE_MAP_READ : FILE_MAP_WRITE, 0, 0, 0);
+	base = MapViewOfFile(hmapping, writable ? FILE_MAP_WRITE : FILE_MAP_READ, 0, 0, 0);
 	if (base == NULL) {
 		fprintf(stderr, "cannot map (2) file %s into memory\n", path);
 		return 1;
@@ -454,12 +458,12 @@ struct subfile_struct *get_subfile (struct gimg_struct *img, const char *subfile
 	return NULL;
 }
 
-struct gimg_struct *gimg_open (const char *path, int readonly)
+struct gimg_struct *gimg_open (const char *path, int writable)
 {
 	struct gimg_struct *img = (struct gimg_struct *)malloc(sizeof(struct gimg_struct));
 
 	img->path = path;
-	if (map_img(path, readonly, &img->base, &img->size))
+	if (map_img(path, writable, &img->base, &img->size))
 		goto errout;
 	if (parse_img(img))
 		goto errout;

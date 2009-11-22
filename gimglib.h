@@ -122,7 +122,7 @@ void dump_img (struct gimg_struct *img);
 void dump_subfile (struct gimg_struct *img, const char *subfile_name);
 struct submap_struct *get_submap (struct gimg_struct *img, const char *mapname);
 struct subfile_struct *get_subfile (struct gimg_struct *img, const char *subfilename);
-struct gimg_struct *gimg_open (const char *path, int readonly);
+struct gimg_struct *gimg_open (const char *path, int writable);
 void gimg_close (struct gimg_struct *img);
 
 #endif

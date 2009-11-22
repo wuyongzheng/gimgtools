@@ -41,7 +41,7 @@ int main (int argc, char **argv)
 		return 1;
 	}
 
-	img = gimg_open(img_path, 1);
+	img = gimg_open(img_path, 0);
 	if (img == NULL) {
 		printf("failed to open or parse %s\n", img_path);
 		return 1;
