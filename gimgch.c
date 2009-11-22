@@ -106,15 +106,15 @@ static void display_headers (int line_columns)
 	}
 	printf("\n");
 
-	for (ptr = 0; ;ptr += bytes_pre_line) {
+	for (ptr = 0; ; ptr += bytes_pre_line) {
 		int more_lines = 0, bc, fc;
 
 		/* print address bar */
 		printf("%s ", emptyid);
-		for (bc = 0; bc < bytes_pre_line - 2; bc += 4) {
+		for (bc = 0; bc <= bytes_pre_line - 2; bc += 4) {
 			printf("%-4x", ptr + bc);
 			if (bc < bytes_pre_line - 4)
-			printf("    ");
+				printf("    ");
 		}
 		printf("\n");
 
@@ -152,10 +152,10 @@ static void display_headers (int line_columns)
 
 		/* print address bar again */
 		printf("%s ", emptyid);
-		for (bc = 0; bc < bytes_pre_line - 2; bc += 4) {
+		for (bc = 0; bc <= bytes_pre_line - 2; bc += 4) {
 			printf("%-4x", ptr + bc);
 			if (bc < bytes_pre_line - 4)
-			printf("    ");
+				printf("    ");
 		}
 		printf("\n\n");
 
