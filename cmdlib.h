@@ -22,6 +22,7 @@ void cmd_fini (void);
 
 static inline int cmd_g24p_inchina (int x, int y)
 {
+	/* 72 * 2^24 / 360 = 3355443.2 */
 	return (x > 3355443 && x < 6291456 &&
 			y > 838860 && y < 2516583);
 }

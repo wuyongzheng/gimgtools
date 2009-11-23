@@ -64,14 +64,12 @@ void cmd_g24p_fix (int *px, int *py)
 		DEVX(ix+1,iy) * (x - ix) * (iy + 1 - y) +
 		DEVX(ix,iy+1) * (ix + 1 - x) * (y - iy) +
 		DEVX(ix+1,iy+1) * (x - ix) * (y - iy);
-	dx /= CMD_DUPD;
 	double dy = DEVY(ix,iy) * (ix + 1 - x) * (iy + 1 - y) +
 		DEVY(ix+1,iy) * (x - ix) * (iy + 1 - y) +
 		DEVY(ix,iy+1) * (ix + 1 - x) * (y - iy) +
 		DEVY(ix+1,iy+1) * (x - ix) * (y - iy);
-	dy /= CMD_DUPD;
-	*px -= dx * 0x1000000 / 360;
-	*py -= dy * 0x1000000 / 360;
+	*px -= (int)lround(dx * 0x1000000 / 360 / CMD_DUPD);
+	*py -= (int)lround(dy * 0x1000000 / 360 / CMD_DUPD);
 }
 
 void cmd_g24p_dev (int *px, int *py)
