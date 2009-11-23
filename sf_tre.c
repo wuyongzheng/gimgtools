@@ -15,9 +15,9 @@ static void dump_poverview (uint8_t *ptr, int num, int size)
 
 static void dump_subdiv_single (struct garmin_tre_subdiv *div, int index, int level, int leave, int bitshift)
 {
-	printf("%5d %d off=%06x ele=%02x, lng=%8d(%s), lat=%8d(%s), w=%5d, h=%5d %c",
+	printf("%5d %d off=%06x ele=%02x+%d, lng=%8d(%s), lat=%8d(%s), w=%5d, h=%5d %c",
 			index, level,
-			bytes_to_uint24(div->rgn_offset), div->elements,
+			bytes_to_uint24(div->rgn_offset), div->elements, div->unknownbit,
 			bytes_to_sint24(div->center_lng), sint24_to_lng(bytes_to_sint24(div->center_lng)),
 			bytes_to_sint24(div->center_lat), sint24_to_lat(bytes_to_sint24(div->center_lat)),
 			div->width<<bitshift, div->height<<bitshift, div->terminate ? 'T' : ' ');
