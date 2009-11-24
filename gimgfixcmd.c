@@ -23,8 +23,9 @@ static int fix_map (struct submap_struct *map)
 	printf("x0=%d(%s) y0=%d(%s) x1=%d(%s) y1=%d(%s)\n",
 			x0, sint24_to_lng(x0), y0, sint24_to_lat(y0),
 			x1, sint24_to_lng(x1), y1, sint24_to_lat(y1));
-	cmd_g24p_fix(&x0, &y0);
-	cmd_g24p_fix(&x1, &y1);
+	cmd_g24r_fix(&x0, &y0, &x1, &y1);
+//	cmd_g24p_fix(&x0, &y0);
+//	cmd_g24p_fix(&x1, &y1);
 	printf("x0=%d(%s) y0=%d(%s) x1=%d(%s) y1=%d(%s)\n",
 			x0, sint24_to_lng(x0), y0, sint24_to_lat(y0),
 			x1, sint24_to_lng(x1), y1, sint24_to_lat(y1));

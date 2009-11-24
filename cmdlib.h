@@ -37,5 +37,7 @@ static inline int cmd_g24r_inchina (int x0, int y0, int x1, int y1)
 
 void cmd_g24p_fix (int *px, int *py);
 void cmd_g24p_dev (int *px, int *py);
+void cmd_g24r_fix (int *px0, int *py0, int *px1, int *py1);
+void cmd_g24r_dev (int *px0, int *py0, int *px1, int *py1);
 
 #endif
