@@ -33,6 +33,23 @@ static void dump_subdiv (uint8_t *ptr, int level_num, struct garmin_tre_map_leve
 			else
 				printf(" next=%5d\n", div->next);
 
+#if 0
+			if (rgn && div->unknownbit) {
+				int rgn1_offset = ((struct garmin_rgn *)rgn->header)->rgn1_offset;
+				int offset = bytes_to_uint24(div->rgn_offset);
+				int next_offset = level == level_num - 1 ? bytes_to_uint24(div[1].rgn_offset - 2) : bytes_to_uint24(div[1].rgn_offset);
+				if (div->elements == 0)
+					;
+				else if (div->elements == 0x10 || div->elements == 0x20)
+					offset += *(short *)(rgn->base + rgn1_offset + offset);
+				else if (div->elements == 0x30)
+					offset += *(short *)(rgn->base + rgn1_offset + offset + 2);
+				else
+					printf("???\n");
+				printf("RGN: %s\n", dump_unknown_bytes(rgn->base + rgn1_offset + offset, next_offset - offset));
+			}
+#endif
+
 			ptr += level == level_num - 1 ? sizeof(struct garmin_tre_subdiv) - 2 : sizeof(struct garmin_tre_subdiv);
 		}
 	}
