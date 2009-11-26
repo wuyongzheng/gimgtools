@@ -60,8 +60,8 @@ int main (int argc, char *argv[])
 			fprintf(stderr, "error: offset too large: %f %f %.7f %.7f\n", x, y, dx, dy);
 			return 1;
 		}
-		ix = (int)round((x - CMD_X0) * spd);
-		iy = (int)round((y - CMD_Y0) * spd);
+		ix = (int)lround((x - CMD_X0) * spd);
+		iy = (int)lround((y - CMD_Y0) * spd);
 		if (fabs((x - CMD_X0) * spd - ix) > 0.1 || fabs((y - CMD_Y0) * spd - iy) > 0.1) {
 			fprintf(stderr, "warning: misaligned %f %f %.2f %.2f\n", x, y, (x - CMD_X0) * spd - ix, (y - CMD_X0) * spd - iy);
 			continue;
@@ -70,8 +70,8 @@ int main (int argc, char *argv[])
 			fprintf(stderr, "warning: OOB %f %f %d %d\n", x, y, ix, iy);
 			continue;
 		}
-		devs[iy * x_num * 2 + ix * 2 + 0] = round(dx * CMD_DUPD);
-		devs[iy * x_num * 2 + ix * 2 + 1] = round(dy * CMD_DUPD);
+		devs[iy * x_num * 2 + ix * 2 + 0] = (short)lround(dx * CMD_DUPD);
+		devs[iy * x_num * 2 + ix * 2 + 1] = (short)lround(dy * CMD_DUPD);
 		assign_round[iy * x_num + ix] = 2;
 		loaded ++;
 	}
@@ -107,8 +107,8 @@ int main (int argc, char *argv[])
 			}
 			if (n == 0)
 				continue;
-			devs[y * x_num * 2 + x * 2 + 0] = sumdx / n;
-			devs[y * x_num * 2 + x * 2 + 1] = sumdy / n;
+			devs[y * x_num * 2 + x * 2 + 0] = (short)lround(sumdx / (double)n);
+			devs[y * x_num * 2 + x * 2 + 1] = (short)lround(sumdy / (double)n);
 			assign_round[y * x_num + x] = 1;
 			interpolated ++;
 			this_itpd ++;
