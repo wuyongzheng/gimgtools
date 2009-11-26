@@ -13,32 +13,29 @@ static void dump_poverview (uint8_t *ptr, int num, int size)
 	}
 }
 
-static void dump_subdiv_single (struct garmin_tre_subdiv *div, int index, int level, int leave, int bitshift)
+static void dump_subdiv (uint8_t *ptr, int level_num, struct garmin_tre_map_level *levels, struct subfile_struct *rgn)
 {
-	printf("%5d %d off=%06x ele=%02x+%d, lng=%8d(%s), lat=%8d(%s), w=%5d, h=%5d %c",
-			index, level,
-			bytes_to_uint24(div->rgn_offset), div->elements, div->unknownbit,
-			bytes_to_sint24(div->center_lng), sint24_to_lng(bytes_to_sint24(div->center_lng)),
-			bytes_to_sint24(div->center_lat), sint24_to_lat(bytes_to_sint24(div->center_lat)),
-			div->width<<bitshift, div->height<<bitshift, div->terminate ? 'T' : ' ');
-	if (leave)
-		printf("\n");
-	else
-		printf(" next=%5d\n", div->next);
-}
+	int level, global_index, level_index;
 
-static void dump_subdiv (uint8_t *ptr, int level_num, struct garmin_tre_map_level *levels)
-{
-	int level, index;
-	int sdcount;
+	for (level = 0, global_index = 1; level < level_num; level ++) {
+		for (level_index = 0; level_index < levels[level].nsubdiv; level_index ++, global_index ++) {
+			struct garmin_tre_subdiv *div = (struct garmin_tre_subdiv *)ptr;
+			int bitshift = 24 - levels[level].bits;
 
-	/* non-leave */
-	for (level = 0, index = 1; level < level_num - 1; level ++)
-		for (sdcount = 0; sdcount < levels[level].nsubdiv; sdcount ++, index ++, ptr += sizeof(struct garmin_tre_subdiv))
-			dump_subdiv_single((struct garmin_tre_subdiv *)ptr, index, levels[level].level, 0, 24 - levels[level].bits);
-	/* leave */
-	for (sdcount = 0; sdcount < levels[level].nsubdiv; sdcount ++, index ++, ptr += sizeof(struct garmin_tre_subdiv) - 2)
-		dump_subdiv_single((struct garmin_tre_subdiv *)ptr, index, levels[level].level, 1, 24 - levels[level].bits);
+			printf("%5d %d off=%06x ele=%02x+%d, lng=%8d(%s), lat=%8d(%s), w=%5d, h=%5d %c",
+					global_index, level,
+					bytes_to_uint24(div->rgn_offset), div->elements, div->unknownbit,
+					bytes_to_sint24(div->center_lng), sint24_to_lng(bytes_to_sint24(div->center_lng)),
+					bytes_to_sint24(div->center_lat), sint24_to_lat(bytes_to_sint24(div->center_lat)),
+					div->width<<bitshift, div->height<<bitshift, div->terminate ? 'T' : ' ');
+			if (level == level_num - 1)
+				printf("\n");
+			else
+				printf(" next=%5d\n", div->next);
+
+			ptr += level == level_num - 1 ? sizeof(struct garmin_tre_subdiv) - 2 : sizeof(struct garmin_tre_subdiv);
+		}
+	}
 }
 
 static void dump_maplevels (struct garmin_tre_map_level *levels, int num)
@@ -180,7 +177,7 @@ headerfini:
 	dump_maplevels(maplevels, header->tre1_size / sizeof(struct garmin_tre_map_level));
 
 	printf("=== SUBDIVISIONS ===\n");
-	dump_subdiv(tre->base + header->tre2_offset, header->tre1_size / 4, maplevels);
+	dump_subdiv(tre->base + header->tre2_offset, header->tre1_size / 4, maplevels, tre->map ? tre->map->rgn : NULL);
 
 	//TODO copyright
 
