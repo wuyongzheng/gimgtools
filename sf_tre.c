@@ -41,44 +41,6 @@ static void dump_subdiv (uint8_t *ptr, int level_num, struct garmin_tre_map_leve
 		dump_subdiv_single((struct garmin_tre_subdiv *)ptr, index, levels[level].level, 1, 24 - levels[level].bits);
 }
 
-static void dump_subdiv_locked (uint8_t *ptr, int level_num)
-{
-	struct garmin_tre_subdiv *div;
-	int index, curr_level, first_next_level_index, last_next_level_index;
-
-	curr_level = level_num;
-	first_next_level_index = 1;
-	last_next_level_index = 1;
-	div = (struct garmin_tre_subdiv *)ptr;
-	index = 1;
-	for (;;) {
-		if (index >= first_next_level_index) {
-			assert(index == first_next_level_index);
-			curr_level --;
-			if (curr_level == 0)
-				break;
-			first_next_level_index = 65536;
-			last_next_level_index = 1;
-		}
-		if (div->next != 0) {
-			if (div->next < first_next_level_index)
-				first_next_level_index = div->next;
-			if (div->next > last_next_level_index)
-				last_next_level_index = div->next;
-		}
-		dump_subdiv_single(div, index, curr_level, 0, 0);
-		div ++;
-		index ++;
-	}
-	for (;;) {
-		dump_subdiv_single(div, index, curr_level, 1, 0);
-		if (index >= last_next_level_index && div->terminate)
-			break;
-		div = (struct garmin_tre_subdiv *)((char *)div + sizeof(struct garmin_tre_subdiv) - 2);
-		index ++;
-	}
-}
-
 static void dump_maplevels (struct garmin_tre_map_level *levels, int num)
 {
 	int i;
@@ -215,14 +177,10 @@ headerfini:
 		maplevels = (struct garmin_tre_map_level *)malloc(header->tre1_size);
 		memcpy(maplevels, tre->base + header->tre1_offset, header->tre1_size);
 	}
-	if (maplevels)
-		dump_maplevels(maplevels, header->tre1_size / sizeof(struct garmin_tre_map_level));
+	dump_maplevels(maplevels, header->tre1_size / sizeof(struct garmin_tre_map_level));
 
 	printf("=== SUBDIVISIONS ===\n");
-	if (maplevels)
-		dump_subdiv(tre->base + header->tre2_offset, header->tre1_size / 4, maplevels);
-	else
-		dump_subdiv_locked(tre->base + header->tre2_offset, header->tre1_size / 4);
+	dump_subdiv(tre->base + header->tre2_offset, header->tre1_size / 4, maplevels);
 
 	//TODO copyright
 
@@ -251,6 +209,5 @@ headerfini:
 				header->tre7_rec_size, maplevels);
 	}
 
-	if (maplevels)
-		free(maplevels);
+	free(maplevels);
 }
