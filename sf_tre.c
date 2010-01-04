@@ -66,10 +66,10 @@ static void dump_maplevels (struct garmin_tre_map_level *levels, int num)
 	}
 }
 
-static void dump_tre7 (uint8_t *ptr, int size, int rec_size, struct garmin_tre_map_level *levels)
+static void dump_tre7 (uint8_t *ptr, int size, int rec_size, struct garmin_tre_map_level *levels, struct subfile_struct *rgn)
 {
-	int sdidx = 0;
-	while (size >= rec_size) {
+	int sdidx = 1;
+	while (size >= rec_size * 2) {
 		printf("%4d:", sdidx ++);
 		printf(" rgn2_reloff=0x%x", *(uint32_t *)ptr);
 		if (rec_size >= 8)
@@ -82,6 +82,18 @@ static void dump_tre7 (uint8_t *ptr, int size, int rec_size, struct garmin_tre_m
 			printf(" flag=0x%x\n", *(ptr+rec_size-1));
 		else
 			printf("\n");
+
+#if 0
+		if (*(uint32_t *)(ptr+rec_size) - *(uint32_t *)(ptr))
+			printf("RGN2: %s\n", dump_unknown_bytes(rgn->base + ((struct garmin_rgn *)rgn->header)->rgn2_offset + *(uint32_t *)(ptr), *(uint32_t *)(ptr+rec_size) - *(uint32_t *)(ptr)));
+		if (rec_size >= 8 && *(uint32_t *)(ptr+rec_size+4) - *(uint32_t *)(ptr+4))
+			printf("RGN3: %s\n", dump_unknown_bytes(rgn->base + ((struct garmin_rgn *)rgn->header)->rgn3_offset + *(uint32_t *)(ptr+4), *(uint32_t *)(ptr+rec_size+4) - *(uint32_t *)(ptr+4)));
+		if (rec_size >= 12 && *(uint32_t *)(ptr+rec_size+8) - *(uint32_t *)(ptr+8))
+			printf("RGN4: %s\n", dump_unknown_bytes(rgn->base + ((struct garmin_rgn *)rgn->header)->rgn4_offset + *(uint32_t *)(ptr+8), *(uint32_t *)(ptr+rec_size+8) - *(uint32_t *)(ptr+8)));
+		if (rec_size >= 16 && *(uint32_t *)(ptr+rec_size+12) - *(uint32_t *)(ptr+12))
+			printf("RGN5: %s\n", dump_unknown_bytes(rgn->base + ((struct garmin_rgn *)rgn->header)->rgn5_offset + *(uint32_t *)(ptr+12), *(uint32_t *)(ptr+rec_size+12) - *(uint32_t *)(ptr+12)));
+#endif
+
 		ptr += rec_size;
 		size -= rec_size;
 	}
@@ -220,7 +232,7 @@ headerfini:
 	if (header->comm.hlen >= 0x85 && header->tre7_size) {
 		printf("=== TRE7 ===\n");
 		dump_tre7(tre->base + header->tre7_offset, header->tre7_size,
-				header->tre7_rec_size, maplevels);
+				header->tre7_rec_size, maplevels, tre->map->rgn);
 	}
 
 	free(maplevels);
