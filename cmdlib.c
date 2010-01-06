@@ -61,9 +61,9 @@ static inline double cmd_point_dx (double x, double y)
 	int ix = (int)x;
 	int iy = (int)y;
 
-	if (ix == 0) x = ix = 0;
+	if (x <= 0) x = ix = 0;
 	else if (ix >= cmd_x_num - 1) x = ix = cmd_x_num - 1;
-	if (iy == 0) y = iy = 0;
+	if (y <= 0) y = iy = 0;
 	else if (iy >= cmd_y_num - 1) y = iy = cmd_y_num - 1;
 
 	return DEVX(ix,iy) * (ix + 1 - x) * (iy + 1 - y) +
@@ -76,9 +76,9 @@ static inline double cmd_point_dy (double x, double y)
 	int ix = (int)x;
 	int iy = (int)y;
 
-	if (ix == 0) x = ix = 0;
+	if (x <= 0) x = ix = 0;
 	else if (ix >= cmd_x_num - 1) x = ix = 0;
-	if (iy == 0) y = iy = 0;
+	if (y <= 0) y = iy = 0;
 	else if (iy >= cmd_y_num - 1) y = iy = 0;
 
 	return DEVY(ix,iy) * (ix + 1 - x) * (iy + 1 - y) +
@@ -102,7 +102,13 @@ void cmd_g24p_fix (int *px, int *py)
 }
 void cmd_g24p_dev (int *px, int *py)
 {
-	assert(0);
+	double x, y;
+
+	x = (*px * 360.0 / 0x1000000 - CMD_X0) * cmd_spd;
+	y = (*py * 360.0 / 0x1000000 - CMD_Y0) * cmd_spd;
+
+	*px += (int)lround(cmd_point_dx(x, y) * 0x1000000 / 360 / CMD_DUPD);
+	*py += (int)lround(cmd_point_dy(x, y) * 0x1000000 / 360 / CMD_DUPD);
 }
 
 /* cmd_ls_dx: get average deviation x of a vertical line segment.
@@ -115,8 +121,8 @@ void cmd_g24p_dev (int *px, int *py)
 static double cmd_ls_dx (double x, double y0, double y1, int swapxy)
 {
 	int n, i, ix, iy0, iy1;
-	int my_x_num = swapxy ? cmd_y_num : cmd_x_num;
-	int my_y_num = swapxy ? cmd_x_num : cmd_y_num;
+	const int my_x_num = swapxy ? cmd_y_num : cmd_x_num;
+	const int my_y_num = swapxy ? cmd_x_num : cmd_y_num;
 	double sum;
 
 	assert(y0 <= y1);
@@ -132,6 +138,8 @@ static double cmd_ls_dx (double x, double y0, double y1, int swapxy)
 	iy0 = lround(y0);
 	iy1 = lround(y1);
 	if (iy0 < 0) iy0 = 0;
+	if (iy0 >= my_y_num) iy0 = my_y_num - 1;
+	if (iy1 < 0) iy1 = 0;
 	if (iy1 >= my_y_num) iy1 = my_y_num - 1;
 
 	n = iy1 - iy0;
@@ -170,5 +178,17 @@ void cmd_g24r_fix (int *px0, int *py0, int *px1, int *py1)
 }
 void cmd_g24r_dev (int *px0, int *py0, int *px1, int *py1)
 {
-	assert(0);
+	double x0, y0, x1, y1;
+
+	x0 = (*px0 * 360.0 / 0x1000000 - CMD_X0) * cmd_spd;
+	x1 = (*px1 * 360.0 / 0x1000000 - CMD_X0) * cmd_spd;
+	y0 = (*py0 * 360.0 / 0x1000000 - CMD_Y0) * cmd_spd;
+	y1 = (*py1 * 360.0 / 0x1000000 - CMD_Y0) * cmd_spd;
+
+	assert(x0 <= x1 && y0 <= y1);
+
+	*px0 += (int)lround(cmd_ls_dx(x0, y0, y1, 0) * 0x1000000 / 360 / CMD_DUPD);
+	*px1 += (int)lround(cmd_ls_dx(x1, y0, y1, 0) * 0x1000000 / 360 / CMD_DUPD);
+	*py0 += (int)lround(cmd_ls_dx(y0, x0, x1, 1) * 0x1000000 / 360 / CMD_DUPD);
+	*py1 += (int)lround(cmd_ls_dx(y1, x0, x1, 1) * 0x1000000 / 360 / CMD_DUPD);
 }
