@@ -52,9 +52,11 @@ void cmd_fini (void)
 	cmd_devs = NULL;
 }
 
-/* x, y are in sample unit.
+/* cmd_point_dx: get deviation x of a point
+ * cmd_point_dy: get deviation y of a point
+ * x, y are in sample unit.
  * returned value is in deviation unit. */
-static inline double cmd_get_dx (double x, double y)
+static inline double cmd_point_dx (double x, double y)
 {
 	int ix = (int)x;
 	int iy = (int)y;
@@ -69,7 +71,7 @@ static inline double cmd_get_dx (double x, double y)
 		DEVX(ix,iy+1) * (ix + 1 - x) * (y - iy) +
 		DEVX(ix+1,iy+1) * (x - ix) * (y - iy);
 }
-static inline double cmd_get_dy (double x, double y)
+static inline double cmd_point_dy (double x, double y)
 {
 	int ix = (int)x;
 	int iy = (int)y;
@@ -85,6 +87,9 @@ static inline double cmd_get_dy (double x, double y)
 		DEVY(ix+1,iy+1) * (x - ix) * (y - iy);
 }
 
+/* cmd_g24p_fix: given a deviated point, return the corrected point.
+ * cmd_g24p_dev: given a correcte point, return the deviated point.
+ * The input and output is in garmin's 24bit unit */
 void cmd_g24p_fix (int *px, int *py)
 {
 	double x, y;
@@ -92,21 +97,22 @@ void cmd_g24p_fix (int *px, int *py)
 	x = (*px * 360.0 / 0x1000000 - CMD_X0) * cmd_spd;
 	y = (*py * 360.0 / 0x1000000 - CMD_Y0) * cmd_spd;
 
-	*px -= (int)lround(cmd_get_dx(x, y) * 0x1000000 / 360 / CMD_DUPD);
-	*py -= (int)lround(cmd_get_dy(x, y) * 0x1000000 / 360 / CMD_DUPD);
+	*px -= (int)lround(cmd_point_dx(x, y) * 0x1000000 / 360 / CMD_DUPD);
+	*py -= (int)lround(cmd_point_dy(x, y) * 0x1000000 / 360 / CMD_DUPD);
 }
-
 void cmd_g24p_dev (int *px, int *py)
 {
 	assert(0);
 }
 
-/* x, y0, y1 are all in sample unit.
+/* cmd_ls_dx: get average deviation x of a vertical line segment.
+ * The putpose of it is to correct rectangle boundry.
+ * x, y0, y1 are all in sample unit.
  * returned value is in deviation unit.
- * swapxy: I'm too lazy to implement two versions: get_avg_dx and get_avg_dy
- * swapxy = 0 means get_avg_dx(x, y0, y1)
- * swapxy = 1 means get_avg_dy(y, x0, x1) */
-static double get_avg_dx (double x, double y0, double y1, int swapxy)
+ * swapxy: I'm too lazy to implement two versions: cmd_ls_dx and cmd_ls_dy
+ * swapxy = 0 means cmd_ls_dx(x, y0, y1)
+ * swapxy = 1 means cmd_ls_dy(y, x0, x1) */
+static double cmd_ls_dx (double x, double y0, double y1, int swapxy)
 {
 	int n, i, ix, iy0, iy1;
 	int my_x_num = swapxy ? cmd_y_num : cmd_x_num;
@@ -130,7 +136,7 @@ static double get_avg_dx (double x, double y0, double y1, int swapxy)
 
 	n = iy1 - iy0;
 	if (n <= 1)
-		return swapxy ? cmd_get_dy((y0 + y1) / 2, x) : cmd_get_dx(x, (y0 + y1) / 2);
+		return swapxy ? cmd_point_dy((y0 + y1) / 2, x) : cmd_point_dx(x, (y0 + y1) / 2);
 	if (n > 10) n = 10; /* don't want too much computation */
 	for (sum = 0.0, i = 0; i <= n; i ++) {
 		int iy = (i * (iy1 - iy0) + n * iy0) / n;
@@ -142,7 +148,10 @@ static double get_avg_dx (double x, double y0, double y1, int swapxy)
 	return sum / (n + 1);
 }
 
-/* assume x0 <= x1 && y0 <= y1 */
+/* cmd_g24r_fix: given a divated rectangle, return the corrected one.
+ * cmd_g24r_dev: given a correct rectangle, return the divated one.
+ * the input and output is in garmin's 24bit unit.
+ * assume x0 <= x1 && y0 <= y1 */
 void cmd_g24r_fix (int *px0, int *py0, int *px1, int *py1)
 {
 	double x0, y0, x1, y1;
@@ -154,12 +163,11 @@ void cmd_g24r_fix (int *px0, int *py0, int *px1, int *py1)
 
 	assert(x0 <= x1 && y0 <= y1);
 
-	*px0 -= (int)lround(get_avg_dx(x0, y0, y1, 0) * 0x1000000 / 360 / CMD_DUPD);
-	*px1 -= (int)lround(get_avg_dx(x1, y0, y1, 0) * 0x1000000 / 360 / CMD_DUPD);
-	*py0 -= (int)lround(get_avg_dx(y0, x0, x1, 1) * 0x1000000 / 360 / CMD_DUPD);
-	*py1 -= (int)lround(get_avg_dx(y1, x0, x1, 1) * 0x1000000 / 360 / CMD_DUPD);
+	*px0 -= (int)lround(cmd_ls_dx(x0, y0, y1, 0) * 0x1000000 / 360 / CMD_DUPD);
+	*px1 -= (int)lround(cmd_ls_dx(x1, y0, y1, 0) * 0x1000000 / 360 / CMD_DUPD);
+	*py0 -= (int)lround(cmd_ls_dx(y0, x0, x1, 1) * 0x1000000 / 360 / CMD_DUPD);
+	*py1 -= (int)lround(cmd_ls_dx(y1, x0, x1, 1) * 0x1000000 / 360 / CMD_DUPD);
 }
-
 void cmd_g24r_dev (int *px0, int *py0, int *px1, int *py1)
 {
 	assert(0);
