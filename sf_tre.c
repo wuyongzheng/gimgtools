@@ -229,7 +229,7 @@ headerfini:
 				header->tre6_rec_size);
 	}
 
-	if (header->comm.hlen >= 0x85 && header->tre7_size) {
+	if (header->comm.hlen >= 0x86 && header->tre7_size) {
 		printf("=== TRE7 ===\n");
 		dump_tre7(tre->base + header->tre7_offset, header->tre7_size,
 				header->tre7_rec_size, maplevels, tre->map->rgn);
