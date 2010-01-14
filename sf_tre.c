@@ -69,7 +69,7 @@ static void dump_maplevels (struct garmin_tre_map_level *levels, int num)
 static void dump_tre7 (uint8_t *ptr, int size, int rec_size, struct garmin_tre_map_level *levels, struct subfile_struct *rgn)
 {
 	int sdidx = 1;
-	while (size >= rec_size * 2) {
+	while (size >= rec_size) {
 		printf("%4d:", sdidx ++);
 		printf(" rgn2_reloff=0x%x", *(uint32_t *)ptr);
 		if (rec_size >= 8)
