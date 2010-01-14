@@ -10,6 +10,8 @@
 #define CMD_Y0 18
 #define CMD_Y1 54
 
+static int dryrun = 0;
+
 static int fix_subdiv (struct submap_struct *map, struct garmin_tre_map_level *maplevel,
 		struct garmin_tre_subdiv *div, unsigned char *div2, int div2_len)
 {
@@ -35,6 +37,10 @@ static int fix_subdiv (struct submap_struct *map, struct garmin_tre_map_level *m
 	printf("subdiv cent fixd: x=%d(%s) y=%d(%s)\n",
 			center_x, sint24_to_lng(center_x),
 			center_y, sint24_to_lat(center_y));
+	if (!dryrun) {
+		//TODO change it
+	}
+
 	return 0;
 }
 
@@ -58,6 +64,9 @@ static int fix_map (struct submap_struct *map)
 	printf("submap bond fixd: x0=%d(%s) y0=%d(%s) x1=%d(%s) y1=%d(%s)\n",
 			x0, sint24_to_lng(x0), y0, sint24_to_lat(y0),
 			x1, sint24_to_lng(x1), y1, sint24_to_lat(y1));
+	if (!dryrun) {
+		//TODO change it
+	}
 
 	if (tre_header->comm.locked) {
 		maplevels = (struct garmin_tre_map_level *)malloc(tre_header->tre1_size);
@@ -117,6 +126,8 @@ int main (int argc, char **argv)
 				strcmp(argv[i], "--help") == 0 ||
 				strcmp(argv[i], "-?") == 0) {
 			usage(0);
+		} else if (strcmp(argv[i], "-dryrun") == 0) {
+			dryrun = 1;
 		} else if (argv[i][0] == '-') {
 			printf("unknown option %s\n", argv[i]);
 			usage(1);
@@ -140,7 +151,7 @@ int main (int argc, char **argv)
 		usage(1);
 	}
 
-	img = gimg_open(img_path, 1);
+	img = gimg_open(img_path, dryrun ? 0 : 1);
 	if (img == NULL) {
 		printf("failed to open or parse %s\n", img_path);
 		return 1;
