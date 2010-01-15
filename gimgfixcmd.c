@@ -38,7 +38,8 @@ static int fix_subdiv (struct submap_struct *map, struct garmin_tre_map_level *m
 			center_x, sint24_to_lng(center_x),
 			center_y, sint24_to_lat(center_y));
 	if (!dryrun) {
-		//TODO change it
+		sint24_to_bytes(center_x, div->center_lng);
+		sint24_to_bytes(center_y, div->center_lat);
 	}
 
 	return 0;
@@ -65,7 +66,10 @@ static int fix_map (struct submap_struct *map)
 			x0, sint24_to_lng(x0), y0, sint24_to_lat(y0),
 			x1, sint24_to_lng(x1), y1, sint24_to_lat(y1));
 	if (!dryrun) {
-		//TODO change it
+		sint24_to_bytes(x0, tre_header->westbound);
+		sint24_to_bytes(y0, tre_header->southbound);
+		sint24_to_bytes(x1, tre_header->eastbound);
+		sint24_to_bytes(y1, tre_header->northbound);
 	}
 
 	if (tre_header->comm.locked) {

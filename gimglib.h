@@ -78,9 +78,14 @@ struct gimg_struct {
 static inline unsigned int bytes_to_uint24 (unsigned char *bytes) {
 	return (*(unsigned int *)bytes) & 0x00ffffff;
 }
-static inline int bytes_to_sint24 (unsigned char *bytes) {
-	int n = (*(int *)bytes) & 0x00ffffff;
+static inline int bytes_to_sint24 (const unsigned char *bytes) {
+	int n = (*(const int *)bytes) & 0x00ffffff;
 	return (n < 0x00800000) ? n : (n | 0xff000000);
+}
+static inline void sint24_to_bytes (int n, unsigned char *bytes) {
+	bytes[0] = n & 0xff;
+	bytes[1] = (n >> 8) & 0xff;
+	bytes[2] = (n >> 16) & 0xff;
 }
 
 /* util.c */

@@ -29,7 +29,7 @@ static int map_img (const char *path, int writable, uint8_t **pbase, unsigned in
 	//vlog("file size = %u\n", img_size);
 
 	base = mmap(NULL, sb.st_size, PROT_READ | (PROT_WRITE * writable),
-			MAP_PRIVATE, img_fd, 0);
+			MAP_SHARED, img_fd, 0);
 	if (base == MAP_FAILED) {
 		fprintf(stderr, "cannot map file %s into memory\n", path);
 		return 1;
