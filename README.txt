@@ -1,3 +1,8 @@
+CMDDB sorting:
+sed -e 's/\t\([0-9][0-9]\)\./\t0\1./g' <cmddb.tsv.in |
+sort -u |
+sed -e 's/\t0\([0-9][0-9]\)\./\t\1./g' >cmddb.tsv.out
+
 Credits:
 http://sourceforge.net/projects/garmin-img/
 http://libgarmin.sourceforge.net/
