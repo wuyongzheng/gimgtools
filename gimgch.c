@@ -58,7 +58,8 @@ static unsigned int read_4byte_at (FILE *fp, unsigned long offset)
 	return n;
 }
 
-static void read_bytes_at (FILE *fp, unsigned long offset, unsigned char *buffer, int size)
+static void read_bytes_at (FILE *fp, unsigned long offset,
+		unsigned char *buffer, int size)
 {
 	if (fseek(fp, offset, SEEK_SET)) {
 		perror(NULL);
@@ -167,7 +168,9 @@ static void display_headers (int line_columns)
 static int add_header(FILE *fp, const char *imgpath, const char *sf_name,
 		int subfile_offset, int subfile_size, int header_rel_offset)
 {
-	struct header_struct *header = (struct header_struct *)malloc(sizeof(struct header_struct));
+	struct header_struct *header =
+		(struct header_struct *)malloc(sizeof(struct header_struct));
+
 	header->imgpath = imgpath;
 	strcpy(header->subfile, sf_name);
 	header->subfile_offset = subfile_offset;
@@ -181,7 +184,8 @@ static int add_header(FILE *fp, const char *imgpath, const char *sf_name,
 	}
 
 	header->header = (unsigned char *)malloc(header->header_size);
-	read_bytes_at(fp, subfile_offset + header_rel_offset, header->header, header->header_size);
+	read_bytes_at(fp, subfile_offset + header_rel_offset,
+			header->header, header->header_size);
 
 	if (header_num >= MAX_HEADERS) {
 		printf("too many files\n");
@@ -191,8 +195,15 @@ static int add_header(FILE *fp, const char *imgpath, const char *sf_name,
 	return 0;
 }
 
-#define errexit(...) do {printf(__VA_ARGS__); if (fp) fclose(fp); return 1;} while (0)
-static int read_header (const char *imgpath, const char *subfile_name_pattern, int match_maximum)
+#define errexit(...) \
+	do { \
+		printf(__VA_ARGS__); \
+		if (fp) \
+			fclose(fp); \
+		return 1; \
+	} while (0)
+static int read_header (const char *imgpath, const char *subfile_name_pattern,
+		int match_maximum)
 {
 	FILE *fp = NULL;
 	int block_size, fatstart, fatend, fatcount;
@@ -248,7 +259,8 @@ static int read_header (const char *imgpath, const char *subfile_name_pattern, i
 		read_bytes_at(fp, offset + 0x9, (unsigned char *)sf_name + strlen(sf_name), 3);
 		if (strchr(sf_name, ' ') != NULL)
 			strchr(sf_name, ' ')[0] = '\0';
-		if (strchr(sf_name, '/') != NULL || strchr(sf_name, '\\') != NULL) /* a simple security check */
+		/* a simple security check */
+		if (strchr(sf_name, '/') != NULL || strchr(sf_name, '\\') != NULL)
 			errexit("invalid subfile name %s\n", sf_name);
 
 		subfile_offset = read_2byte_at(fp, offset + 0x20) * block_size;
@@ -279,12 +291,14 @@ static int read_header (const char *imgpath, const char *subfile_name_pattern, i
 				int header_rel_offset;
 				strcpy(sf_new_name, sf_name);
 				strcpy(strstr(sf_new_name, ".GMP"), exts[i]);
-				if (subfile_name_pattern != NULL && strstr(sf_new_name, subfile_name_pattern) == NULL)
+				if (subfile_name_pattern != NULL &&
+						strstr(sf_new_name, subfile_name_pattern) == NULL)
 					continue;
 				header_rel_offset = read_4byte_at(fp, subfile_offset + offs[i]);
 				if (header_rel_offset == 0)
 					continue;
-				if (add_header(fp, imgpath, sf_new_name, subfile_offset, subfile_size, header_rel_offset))
+				if (add_header(fp, imgpath, sf_new_name, subfile_offset,
+							subfile_size, header_rel_offset))
 					errexit("add_header failed\n");
 				added ++;
 				if (match_maximum && added >= match_maximum)
@@ -302,7 +316,8 @@ out:
 
 static void usage (void)
 {
-	printf("Usage: gimgch [-w columns] [-m max_sf_per_img] [-s subfile_name_pattern] file1.img file2.img ...\n");
+	printf("Usage: gimgch [-w columns] [-m max_sf_per_img] "
+			"[-s subfile_name_pattern] file1.img file2.img ...\n");
 }
 
 int main (int argc, char *argv[])

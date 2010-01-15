@@ -63,7 +63,8 @@ int main (int argc, char *argv[])
 		ix = (int)lround((x - CMD_X0) * spd);
 		iy = (int)lround((y - CMD_Y0) * spd);
 		if (fabs((x - CMD_X0) * spd - ix) > 0.1 || fabs((y - CMD_Y0) * spd - iy) > 0.1) {
-			fprintf(stderr, "warning: misaligned %f %f %.2f %.2f\n", x, y, (x - CMD_X0) * spd - ix, (y - CMD_X0) * spd - iy);
+			fprintf(stderr, "warning: misaligned %f %f %.2f %.2f\n",
+					x, y, (x - CMD_X0) * spd - ix, (y - CMD_X0) * spd - iy);
 			continue;
 		}
 		if (ix < 0 || ix >= x_num || iy < 0 || iy >= y_num) {

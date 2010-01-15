@@ -51,7 +51,8 @@ void unlockml (unsigned char *dst, const unsigned char *src,
 
 struct patch_struct *prepend_patch (struct patch_struct *patch_list, unsigned long size)
 {
-	struct patch_struct *new_patch = (struct patch_struct *)malloc(sizeof(struct patch_struct) + size);
+	struct patch_struct *new_patch =
+		(struct patch_struct *)malloc(sizeof(struct patch_struct) + size);
 	if (new_patch == NULL)
 		errexit("out of memory\n");
 	memset(new_patch, 0, sizeof(struct patch_struct) + size);

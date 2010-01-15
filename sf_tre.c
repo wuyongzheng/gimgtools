@@ -13,7 +13,8 @@ static void dump_poverview (uint8_t *ptr, int num, int size)
 	}
 }
 
-static void dump_subdiv (uint8_t *ptr, int level_num, struct garmin_tre_map_level *levels, struct subfile_struct *rgn)
+static void dump_subdiv (uint8_t *ptr, int level_num,
+		struct garmin_tre_map_level *levels, struct subfile_struct *rgn)
 {
 	int level, global_index, level_index;
 
@@ -37,7 +38,9 @@ static void dump_subdiv (uint8_t *ptr, int level_num, struct garmin_tre_map_leve
 			if (rgn && div->unknownbit) {
 				int rgn1_offset = ((struct garmin_rgn *)rgn->header)->rgn1_offset;
 				int offset = bytes_to_uint24(div->rgn_offset);
-				int next_offset = level == level_num - 1 ? bytes_to_uint24(div[1].rgn_offset - 2) : bytes_to_uint24(div[1].rgn_offset);
+				int next_offset = level == level_num - 1 ?
+					bytes_to_uint24(div[1].rgn_offset - 2) :
+					bytes_to_uint24(div[1].rgn_offset);
 				if (div->elements == 0)
 					;
 				else if (div->elements == 0x10 || div->elements == 0x20)
@@ -50,7 +53,9 @@ static void dump_subdiv (uint8_t *ptr, int level_num, struct garmin_tre_map_leve
 			}
 #endif
 
-			ptr += level == level_num - 1 ? sizeof(struct garmin_tre_subdiv) - 2 : sizeof(struct garmin_tre_subdiv);
+			ptr += level == level_num - 1 ?
+				sizeof(struct garmin_tre_subdiv) - 2 :
+				sizeof(struct garmin_tre_subdiv);
 		}
 	}
 }
@@ -66,7 +71,8 @@ static void dump_maplevels (struct garmin_tre_map_level *levels, int num)
 	}
 }
 
-static void dump_tre7 (uint8_t *ptr, int size, int rec_size, struct garmin_tre_map_level *levels, struct subfile_struct *rgn)
+static void dump_tre7 (uint8_t *ptr, int size, int rec_size,
+		struct garmin_tre_map_level *levels, struct subfile_struct *rgn)
 {
 	int sdidx = 1;
 	while (size >= rec_size) {
@@ -206,7 +212,8 @@ headerfini:
 	dump_maplevels(maplevels, header->tre1_size / sizeof(struct garmin_tre_map_level));
 
 	printf("=== SUBDIVISIONS ===\n");
-	dump_subdiv(tre->base + header->tre2_offset, header->tre1_size / 4, maplevels, tre->map ? tre->map->rgn : NULL);
+	dump_subdiv(tre->base + header->tre2_offset, header->tre1_size / 4,
+			maplevels, tre->map ? tre->map->rgn : NULL);
 
 	//TODO copyright
 

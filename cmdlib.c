@@ -132,7 +132,9 @@ static double cmd_ls_dx (double x, double y0, double y1, int swapxy)
 
 	n = iy1 - iy0;
 	if (n <= 1)
-		return swapxy ? cmd_point_dev((y0 + y1) / 2, x, 1) : cmd_point_dev(x, (y0 + y1) / 2, 0);
+		return swapxy ?
+			cmd_point_dev((y0 + y1) / 2, x, 1) :
+			cmd_point_dev(x, (y0 + y1) / 2, 0);
 	if (n > 50) n = 50; /* don't want too much computation */
 	/* TODO: the deviation follows periodic pattern.
 	 * if our samples are aliased against the period, we can get biased average. */
@@ -180,7 +182,8 @@ static double cmd_rect_dev (double x0, double x1, double y0, double y1, int isdy
 	if (ny > 10) ny = 10;
 	/* TODO: the deviation follows periodic pattern.
 	 * if our samples are aliased against the period, we can get biased average. */
-	for (sum = 0.0, county = 0; county <= ny; county ++) for (countx = 0; countx <= nx; countx ++) {
+	for (sum = 0.0, county = 0; county <= ny; county ++)
+	for (countx = 0; countx <= nx; countx ++) {
 		int ix = (countx * (ix1 - ix0) + nx * ix0) / nx;
 		int iy = (county * (iy1 - iy0) + ny * iy0) / ny;
 		sum += isdy ? DEVY(ix,iy) : DEVX(ix,iy);

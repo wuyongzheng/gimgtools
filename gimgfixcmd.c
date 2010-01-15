@@ -84,13 +84,16 @@ static int fix_map (struct submap_struct *map)
 		memcpy(maplevels, map->tre->base + tre_header->tre1_offset, tre_header->tre1_size);
 	}
 
-	for (subdiv_ptr = map->tre->base + tre_header->tre2_offset, level = 0, global_index = 1;
+	for (subdiv_ptr = map->tre->base + tre_header->tre2_offset,
+			level = 0, global_index = 1;
 			level < tre_header->tre1_size / 4; level ++) {
-		for (level_index = 0; level_index < maplevels[level].nsubdiv; level_index ++, global_index ++) {
+		for (level_index = 0; level_index < maplevels[level].nsubdiv;
+				level_index ++, global_index ++) {
 			if (fix_subdiv(map, &maplevels[level],
 						(struct garmin_tre_subdiv *)subdiv_ptr,
 						tre_header->comm.hlen >= 0x86 && tre_header->tre7_size ?
-							map->tre->base + tre_header->tre7_offset + global_index * tre_header->tre7_rec_size :
+							map->tre->base + tre_header->tre7_offset +
+								global_index * tre_header->tre7_rec_size :
 							NULL,
 						tre_header->comm.hlen >= 0x86 && tre_header->tre7_size ?
 							tre_header->tre7_rec_size : 0))

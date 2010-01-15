@@ -29,7 +29,8 @@ void dump_mps (struct subfile_struct *mps)
 			ptr += strlen((char *)mps->base + ptr) + 1;
 			printf(" str3=\"%s\"", mps->base + ptr);
 			ptr += strlen((char *)mps->base + ptr) + 1;
-			printf(" id=%x ?=%x\n", *(uint32_t *)(mps->base + ptr), *(uint32_t *)(mps->base + ptr + 4));
+			printf(" id=%x ?=%x\n", *(uint32_t *)(mps->base + ptr),
+					*(uint32_t *)(mps->base + ptr + 4));
 			ptr += 8;
 			break;
 		case 0x50:

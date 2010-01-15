@@ -112,13 +112,15 @@ int main (int argc, char *argv[])
 		read_bytes_at(infp, offset + 0x9, (unsigned char *)sf_name + strlen(sf_name), 3);
 		while (strrchr(sf_name, ' ') != NULL)
 			strrchr(sf_name, ' ')[0] = '\0';
-		if (strchr(sf_name, '/') != NULL || strchr(sf_name, '\\') != NULL) /* a simple security check */
+		/* a simple security check */
+		if (strchr(sf_name, '/') != NULL || strchr(sf_name, '\\') != NULL)
 			errexit("invalid subfile name %s\n", sf_name);
 
 		sf_offset = read_2byte_at(infp, offset + 0x20) * block_size;
 		sf_size = read_4byte_at(infp, offset + 0xc);
 		if (sf_offset == 0 || sf_size == 0)
-			errexit("subfile %s has 0 offset or size: 0x%lx 0x%lx\n", sf_name, sf_offset, sf_size);
+			errexit("subfile %s has 0 offset or size: 0x%lx 0x%lx\n",
+					sf_name, sf_offset, sf_size);
 
 		outfp = fopen(sf_name, "wb");
 		if (outfp == NULL)
