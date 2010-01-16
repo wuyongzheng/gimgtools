@@ -347,7 +347,7 @@ struct garmin_nod
 	uint32_t nod1_length;        // 0x19
 	uint8_t  nod_bits[4];        // 0x1d
 	uint8_t  align;              // 0x21
-	uint8_t  unknown_025;        // 0x22
+	uint8_t  unknown_022;        // 0x22
 	uint16_t roadptrsize;        // 0x23
 	uint32_t nod2_offset;        // 0x25 Road data
 	uint32_t nod2_length;        // 0x29
