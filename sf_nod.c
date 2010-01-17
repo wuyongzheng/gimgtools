@@ -26,7 +26,7 @@ static void dump_boundary_nodes (unsigned char *ptr, int length, int recsize)
 
 	for (; length >= recsize; ptr += recsize, length -= recsize) {
 		printf("e=%d(%s), n=%d(%s), off=0x%x",
-				bytes_to_sint24(ptr), sint24_to_lat(bytes_to_sint24(ptr)),
+				bytes_to_sint24(ptr), sint24_to_lng(bytes_to_sint24(ptr)),
 				bytes_to_sint24(ptr+3), sint24_to_lat(bytes_to_sint24(ptr+3)),
 				bytes_to_sint24(ptr+6));
 		if (recsize > 9)

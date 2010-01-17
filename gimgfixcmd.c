@@ -12,7 +12,7 @@
 
 static int dryrun = 0;
 
-static int fix_subdiv (struct submap_struct *map, struct garmin_tre_map_level *maplevel,
+static int fix_subdiv (struct subfile_struct *map, struct garmin_tre_map_level *maplevel,
 		struct garmin_tre_subdiv *div, unsigned char *div2, int div2_len)
 {
 	int bitshift = 24 - maplevel->bits;
@@ -45,19 +45,18 @@ static int fix_subdiv (struct submap_struct *map, struct garmin_tre_map_level *m
 	return 0;
 }
 
-static int fix_map (struct submap_struct *map)
+static int fix_tre (struct subfile_struct *tre)
 {
-	struct garmin_tre *tre_header = (struct garmin_tre *)map->tre->header;
+	struct garmin_tre *header = (struct garmin_tre *)tre->header;
 	struct garmin_tre_map_level *maplevels;
 	int x0, y0, x1, y1;
 	int level, global_index, level_index;
 	unsigned char *subdiv_ptr;
 
-	printf("%s\n", map->name);
-	x0 = bytes_to_sint24(tre_header->westbound);
-	y0 = bytes_to_sint24(tre_header->southbound);
-	x1 = bytes_to_sint24(tre_header->eastbound);
-	y1 = bytes_to_sint24(tre_header->northbound);
+	x0 = bytes_to_sint24(header->westbound);
+	y0 = bytes_to_sint24(header->southbound);
+	x1 = bytes_to_sint24(header->eastbound);
+	y1 = bytes_to_sint24(header->northbound);
 	printf("submap bond orig: x0=%d(%s) y0=%d(%s) x1=%d(%s) y1=%d(%s)\n",
 			x0, sint24_to_lng(x0), y0, sint24_to_lat(y0),
 			x1, sint24_to_lng(x1), y1, sint24_to_lat(y1));
@@ -66,44 +65,81 @@ static int fix_map (struct submap_struct *map)
 			x0, sint24_to_lng(x0), y0, sint24_to_lat(y0),
 			x1, sint24_to_lng(x1), y1, sint24_to_lat(y1));
 	if (!dryrun) {
-		sint24_to_bytes(x0, tre_header->westbound);
-		sint24_to_bytes(y0, tre_header->southbound);
-		sint24_to_bytes(x1, tre_header->eastbound);
-		sint24_to_bytes(y1, tre_header->northbound);
+		sint24_to_bytes(x0, header->westbound);
+		sint24_to_bytes(y0, header->southbound);
+		sint24_to_bytes(x1, header->eastbound);
+		sint24_to_bytes(y1, header->northbound);
 	}
 
-	if (tre_header->comm.locked) {
-		maplevels = (struct garmin_tre_map_level *)malloc(tre_header->tre1_size);
+	if (header->comm.locked) {
+		maplevels = (struct garmin_tre_map_level *)malloc(header->tre1_size);
 		unlockml((unsigned char *)maplevels,
-				(unsigned char *)map->tre->base + tre_header->tre1_offset,
-				tre_header->tre1_size,
-				*(unsigned int *)(tre_header->key+16));
+				(unsigned char *)tre->base + header->tre1_offset,
+				header->tre1_size,
+				*(unsigned int *)(header->key+16));
 		//TODO some simple verification, maybe?
 	} else {
-		maplevels = (struct garmin_tre_map_level *)malloc(tre_header->tre1_size);
-		memcpy(maplevels, map->tre->base + tre_header->tre1_offset, tre_header->tre1_size);
+		maplevels = (struct garmin_tre_map_level *)malloc(header->tre1_size);
+		memcpy(maplevels, tre->base + header->tre1_offset, header->tre1_size);
 	}
 
-	for (subdiv_ptr = map->tre->base + tre_header->tre2_offset,
+	for (subdiv_ptr = tre->base + header->tre2_offset,
 			level = 0, global_index = 1;
-			level < tre_header->tre1_size / 4; level ++) {
+			level < header->tre1_size / 4; level ++) {
 		for (level_index = 0; level_index < maplevels[level].nsubdiv;
 				level_index ++, global_index ++) {
-			if (fix_subdiv(map, &maplevels[level],
+			if (fix_subdiv(tre, &maplevels[level],
 						(struct garmin_tre_subdiv *)subdiv_ptr,
-						tre_header->comm.hlen >= 0x86 && tre_header->tre7_size ?
-							map->tre->base + tre_header->tre7_offset +
-								global_index * tre_header->tre7_rec_size :
+						header->comm.hlen >= 0x86 && header->tre7_size ?
+							tre->base + header->tre7_offset +
+								global_index * header->tre7_rec_size :
 							NULL,
-						tre_header->comm.hlen >= 0x86 && tre_header->tre7_size ?
-							tre_header->tre7_rec_size : 0))
+						header->comm.hlen >= 0x86 && header->tre7_size ?
+							header->tre7_rec_size : 0))
 				return 1;
-			subdiv_ptr += level == tre_header->tre1_size / 4 - 1 ?
+			subdiv_ptr += level == header->tre1_size / 4 - 1 ?
 				sizeof(struct garmin_tre_subdiv) - 2 :
 				sizeof(struct garmin_tre_subdiv);
 		}
 	}
 	return 0;
+}
+
+static int fix_nod (struct subfile_struct *nod)
+{
+	struct garmin_nod *header = (struct garmin_nod *)nod->header;
+
+	if (header->nod3_length) {
+		unsigned char *ptr = nod->base + header->nod3_offset;
+		int length = header->nod3_length;
+		int recsize = header->nod3_recsize;
+
+		if (recsize < 9) {
+			printf("Error: NOD3 boundry nodes's recsize %d is less than 9\n", recsize);
+			return 1;
+		}
+
+		for (; length >= recsize; ptr += recsize, length -= recsize) {
+			int x = bytes_to_sint24(ptr);
+			int y = bytes_to_sint24(ptr+3);
+			printf("orig bond-node: e=%d(%s), n=%d(%s)\n",
+					x, sint24_to_lng(x), y, sint24_to_lat(y));
+			cmd_g24p_fix(&x, &y);
+			printf("fixd bond-node: e=%d(%s), n=%d(%s)\n",
+					x, sint24_to_lng(x), y, sint24_to_lat(y));
+			if (!dryrun) {
+				sint24_to_bytes(x, ptr);
+				sint24_to_bytes(y, ptr+3);
+			}
+		}
+	}
+	return 0;
+}
+
+static int fix_map (struct submap_struct *map)
+{
+	printf("%s\n", map->name);
+	return fix_tre(map->tre) || fix_nod(map->nod);
 }
 
 static int fix_img (struct gimg_struct *img)
