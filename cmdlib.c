@@ -174,14 +174,22 @@ static double cmd_rect_dev (double x0, double x1, double y0, double y1, int isdy
 	nx = ix1 - ix0;
 	ny = iy1 - iy0;
 
-	if (nx <= 1)
-		return cmd_ls_dx((x0 + x1) / 2, y0, y1, 0);
-	if (ny <= 1)
-		return cmd_ls_dx((y0 + y1) / 2, x0, x1, 1);
 	if (nx > 10) nx = 10; /* don't want too much computation */
 	if (ny > 10) ny = 10;
+	if (nx <= 1 && ny <= 1)
+		return cmd_point_dev((x0 + x1) / 2, (y0 + y1) / 2, isdy);
 	/* TODO: the deviation follows periodic pattern.
 	 * if our samples are aliased against the period, we can get biased average. */
+	if (nx <= 1) {
+		for (sum = 0.0, county = 0; county <= ny; county ++)
+			sum += cmd_point_dev((x0 + x1) / 2, (county * (iy1 - iy0) + ny * iy0) / ny, isdy);
+		return sum / (ny + 1);
+	}
+	if (ny <= 1) {
+		for (sum = 0.0, countx = 0; countx <= nx; countx ++)
+			sum += cmd_point_dev((countx * (ix1 - ix0) + nx * ix0) / nx, (y0 + y1) / 2, isdy);
+		return sum / (nx + 1);
+	}
 	for (sum = 0.0, county = 0; county <= ny; county ++)
 	for (countx = 0; countx <= nx; countx ++) {
 		int ix = (countx * (ix1 - ix0) + nx * ix0) / nx;
