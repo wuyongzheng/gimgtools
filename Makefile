@@ -8,7 +8,7 @@ all: gimginfo gimgfixcmd gimgxor gimgunlock gimgch gimgextract cmdc
 gimginfo: gimginfo.o $(GIMGLIB_OBJS)
 
 gimgfixcmd: gimgfixcmd.o cmdlib.o $(GIMGLIB_OBJS)
-	$(CC) -o $@ -lm $^
+	$(CC) -o $@ $^ -lm
 
 gimgxor: gimgxor.o
 
@@ -19,7 +19,7 @@ gimgch: gimgch.o
 gimgextract: gimgextract.o
 
 cmdc: cmdc.o
-	$(CC) -o $@ -lm $<
+	$(CC) -o $@ $< -lm
 
 .PHONY: clean
 clean:
