@@ -1,9 +1,34 @@
-CMDDB sorting:
-sed -e 's/\t\([0-9][0-9]\)\./\t0\1./g' <cmddb.tsv.in |
-sort -u |
-sed -e 's/\t0\([0-9][0-9]\)\./\t\1./g' >cmddb.tsv.out
+gimgtools is a set of command-line tools to examine and manipulate Garmin IMG
+(the map format) files. The tools are:
+
+* gimginfo: Print information of the map. Mainly used for reverse engineering
+    the file format.
+  Usage: gimginfo map.img
+* gimgunlock: Unlock a locked map so that it can be used on ALL devices. There
+    is no need to specify your device ID or map keys. It works by decrypting
+    the TRE section. The decrypting key is the same for all maps. If you like
+    Garmin, please buy their map!
+  Usage: gimgunlock map.img
+* gimgxor: Some maps have been scrambled by a trival XOR algorithm. They do
+    not work with gimginfo or gimgunlock. You can use gimgxor to unscramble
+    them.
+  Usage: gimgxor map.img
+
+Other than that, I have done some research on the deviation of China map
+coordinates. Though there is no concrete result, you can follow it in this
+article
+http://wuyongzheng.wordpress.com/2010/01/22/china-map-deviation-as-a-regression-problem/
+The cmdc tool is to generate the deviation table.
+
+Bug Report:
+Please post it to google code http://code.google.com/p/gimgtools/. If you can
+fix it, you can do so in github and let me know.
 
 Credits:
+Most of the reverse engineering on IMG format was done by other pepole (listed
+below). I just read their docs and code. The reverse engineering of the
+unlocking algorithm is done be me.
+
 http://sourceforge.net/projects/garmin-img/
 http://libgarmin.sourceforge.net/
 http://ati.land.cz/

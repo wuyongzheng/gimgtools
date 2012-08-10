@@ -71,9 +71,9 @@ int read_byte_at (FILE *fp, unsigned long offset)
 	return getc(fp);
 }
 
-int read_2byte_at (FILE *fp, unsigned long offset)
+unsigned int read_2byte_at (FILE *fp, unsigned long offset)
 {
-	int n = 0;
+	unsigned int n = 0;
 	if (fseek(fp, offset, SEEK_SET)) {
 		perror(NULL);
 		exit(1);
@@ -87,7 +87,7 @@ int read_2byte_at (FILE *fp, unsigned long offset)
 
 unsigned int read_4byte_at (FILE *fp, unsigned long offset)
 {
-	int n = 0;
+	unsigned int n = 0;
 	if (fseek(fp, offset, SEEK_SET)) {
 		perror(NULL);
 		exit(1);

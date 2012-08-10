@@ -12,7 +12,7 @@ short *cmd_devs = NULL;
 int cmd_init (const char *path)
 {
 	FILE *fp = fopen(path, "rb");
-	if (fopen == NULL) {
+	if (fp == NULL) {
 		printf("cannot open %s\n", path);
 		goto errout;
 	}
