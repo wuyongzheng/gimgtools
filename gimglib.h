@@ -17,7 +17,6 @@
 # include <stdlib.h>
 # include <assert.h>
 # include <string.h>
-# include <strings.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
 # include <unistd.h>
