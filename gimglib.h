@@ -11,12 +11,15 @@
 # include <windows.h>
 # include "stdintvc.h"
 # define inline __inline
+# define strcasecmp _stricmp
+# define strncasecmp _strnicmp
 #else
 # define GT_POSIX
 # include <stdio.h>
 # include <stdlib.h>
 # include <assert.h>
 # include <string.h>
+# include <strings.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
 # include <unistd.h>

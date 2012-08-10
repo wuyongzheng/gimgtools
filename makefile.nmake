@@ -1,5 +1,5 @@
 CFLAGS = /nologo /W2 /O2
-OBJS = gimginfo.obj gimglib.obj util.obj sf_tre.obj sf_typ.obj sf_mps.obj
+OBJS = gimginfo.obj gimglib.obj util.obj sf_tre.obj sf_typ.obj sf_mps.obj sf_gmp.obj sf_nod.obj sf_net.obj sf_lbl.obj sf_rgn.obj
 
 all: gimginfo.exe gimgxor.exe gimgunlock.exe
 
