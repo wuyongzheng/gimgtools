@@ -18,7 +18,7 @@ void dump_gmp (struct subfile_struct *sf)
 	printf("unknown_02d: 0x%x\n", header->unknown_02d);
 
 	if (header->comm.hlen > sizeof(struct garmin_gmp))
-		printf("from 0x%x to 0x%x (0x%x bytes): %s\n",
+		printf("from 0x%lx to 0x%x (0x%lx bytes): %s\n",
 				sizeof(struct garmin_gmp), header->comm.hlen - 1,
 				header->comm.hlen - sizeof(struct garmin_gmp),
 				dump_unknown_bytes((uint8_t *)header + sizeof(struct garmin_gmp), header->comm.hlen - sizeof(struct garmin_gmp)));
