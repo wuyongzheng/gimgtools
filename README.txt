@@ -3,9 +3,9 @@ gimgtools is a set of command-line tools to examine and manipulate Garmin IMG
 
 * gimgunlock: Unlock a locked map so that it can be used on ALL devices. There
     is no need to specify your device ID or map keys. It works by decrypting
-    the TRE section. The decrypting key is the same for all maps. If you like
-    Garmin, please buy their map!
+    the TRE sections, since the encryption key is also stored in the maps!
   Usage: gimgunlock map.img
+  If you like Garmin, please buy their map!
 * gimgxor: Some maps have been scrambled by a trival XOR algorithm. They do
     not work with other gimg* tools. You can use gimgxor to unscramble them.
   Usage: gimgxor map.img

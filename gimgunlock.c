@@ -71,21 +71,21 @@ int read_byte_at (FILE *fp, unsigned long offset)
 	return getc(fp);
 }
 
-unsigned int read_2byte_at (FILE *fp, unsigned long offset)
+int read_2byte_at (FILE *fp, unsigned long offset)
 {
-	unsigned int n = 0;
+	unsigned char buff[2];
 	if (fseek(fp, offset, SEEK_SET)) {
 		perror(NULL);
 		exit(1);
 	}
-	if (fread(&n, 2, 1, fp) != 1) {
+	if (fread(&buff, 2, 1, fp) != 1) {
 		perror(NULL);
 		exit(1);
 	}
-	return n;
+	return (buff[1] << 8) | buff[0];
 }
 
-unsigned int read_4byte_at (FILE *fp, unsigned long offset)
+unsigned int read_4byte_at (FILE *fp, unsigned long offset) //FIXME: doesn't work on bigendian
 {
 	unsigned int n = 0;
 	if (fseek(fp, offset, SEEK_SET)) {
