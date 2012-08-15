@@ -4,14 +4,15 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include "util_indep.h"
 
 struct header_struct {
 	const char *imgpath;
 	char subfile[16];
+	off_t subfile_offset; /* abs offset */
+	int subfile_size;
 	int header_rel_offset; /* 0 if it's OF */
 	int header_size;
-	int subfile_offset; /* abs offset */
-	int subfile_size;
 	unsigned char *header;
 	char id[4];
 };
@@ -20,56 +21,6 @@ struct header_struct {
 static struct header_struct *headers[MAX_HEADERS];
 static int header_num = 0;
 
-
-static int read_byte_at (FILE *fp, unsigned long offset)
-{
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	return getc(fp);
-}
-
-static int read_2byte_at (FILE *fp, unsigned long offset)
-{
-	int n = 0;
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(&n, 2, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-	return n;
-}
-
-static unsigned int read_4byte_at (FILE *fp, unsigned long offset)
-{
-	int n = 0;
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(&n, 4, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-	return n;
-}
-
-static void read_bytes_at (FILE *fp, unsigned long offset,
-		unsigned char *buffer, int size)
-{
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(buffer, size, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-}
 
 static void display_headers (int line_columns)
 {
@@ -166,7 +117,7 @@ static void display_headers (int line_columns)
 }
 
 static int add_header(FILE *fp, const char *imgpath, const char *sf_name,
-		int subfile_offset, int subfile_size, int header_rel_offset)
+		off_t subfile_offset, int subfile_size, int header_rel_offset)
 {
 	struct header_struct *header =
 		(struct header_struct *)malloc(sizeof(struct header_struct));
@@ -195,13 +146,6 @@ static int add_header(FILE *fp, const char *imgpath, const char *sf_name,
 	return 0;
 }
 
-#define errexit(...) \
-	do { \
-		printf(__VA_ARGS__); \
-		if (fp) \
-			fclose(fp); \
-		return 1; \
-	} while (0)
 static int read_header (const char *imgpath, const char *subfile_name_pattern,
 		int match_maximum)
 {
@@ -223,7 +167,7 @@ static int read_header (const char *imgpath, const char *subfile_name_pattern,
 
 	fatstart = read_byte_at(fp, 0x40) == 0 ? 3 : read_byte_at(fp, 0x40);
 	if (read_4byte_at(fp, 0x40c) == 0) { // use root dir. assume it's the first file
-		unsigned long offset = fatstart * 512;
+		off_t offset = fatstart * 512;
 		if (read_byte_at(fp, offset) != 1 ||
 				read_byte_at(fp, offset + 0x1) != ' ' ||
 				read_byte_at(fp, offset + 0x9) != ' ')
@@ -240,7 +184,8 @@ static int read_header (const char *imgpath, const char *subfile_name_pattern,
 	}
 
 	for (fatcount = fatstart; fatcount < fatend; fatcount ++) {
-		unsigned long offset = fatcount * 512, subfile_offset, subfile_size;
+		off_t offset = fatcount * 512, subfile_offset;
+		int subfile_size;
 		char sf_name[16];
 
 		if (read_byte_at(fp, offset) != 1)

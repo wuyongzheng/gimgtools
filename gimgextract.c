@@ -2,57 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-int read_byte_at (FILE *fp, unsigned long offset)
-{
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	return getc(fp);
-}
-
-int read_2byte_at (FILE *fp, unsigned long offset)
-{
-	int n = 0;
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(&n, 2, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-	return n;
-}
-
-unsigned int read_4byte_at (FILE *fp, unsigned long offset)
-{
-	int n = 0;
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(&n, 4, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-	return n;
-}
-
-void read_bytes_at (FILE *fp, unsigned long offset, unsigned char *buffer, int size)
-{
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(buffer, size, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-}
-
-#define errexit(...) do {printf(__VA_ARGS__); return 1;} while (0)
+#include "util_indep.h"
 
 int main (int argc, char *argv[])
 {
@@ -78,7 +28,7 @@ int main (int argc, char *argv[])
 
 	fatstart = read_byte_at(infp, 0x40) == 0 ? 3 : read_byte_at(infp, 0x40);
 	if (read_4byte_at(infp, 0x40c) == 0) { // use root dir. assume it's the first file
-		unsigned long offset = fatstart * 512;
+		off_t offset = fatstart * 512;
 		if (read_byte_at(infp, offset) != 1 ||
 				read_byte_at(infp, offset + 0x1) != ' ' ||
 				read_byte_at(infp, offset + 0x9) != ' ')
@@ -93,7 +43,8 @@ int main (int argc, char *argv[])
 	}
 
 	for (fatcount = fatstart; fatcount < fatend; fatcount ++) {
-		unsigned long offset = fatcount * 512, sf_offset, sf_size;
+		off_t offset = fatcount * 512, sf_offset;
+		int sf_size;
 		char sf_name[16];
 		FILE *outfp;
 

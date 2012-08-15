@@ -2,23 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#define errexit(...) do {printf(__VA_ARGS__); exit(1);} while (0)
+#include "util_indep.h"
 
 struct patch_struct {
-	unsigned long offset;
-	unsigned long size;
 	unsigned char *data;
 	struct patch_struct *next;
+	off_t offset;
+	unsigned long size;
 };
 
-
-void hexdump (const unsigned char *data, int size)
-{
-	while (size -- > 0)
-		printf("%02x", *(data ++));
-	printf("\n");
-}
 
 void unlockml (unsigned char *dst, const unsigned char *src,
 		int size, unsigned int key)
@@ -53,8 +45,7 @@ struct patch_struct *prepend_patch (struct patch_struct *patch_list, unsigned lo
 {
 	struct patch_struct *new_patch =
 		(struct patch_struct *)malloc(sizeof(struct patch_struct) + size);
-	if (new_patch == NULL)
-		errexit("out of memory\n");
+	assert(new_patch != NULL);
 	memset(new_patch, 0, sizeof(struct patch_struct) + size);
 	new_patch->size = size;
 	new_patch->data = (unsigned char *)new_patch + sizeof(struct patch_struct);
@@ -62,61 +53,8 @@ struct patch_struct *prepend_patch (struct patch_struct *patch_list, unsigned lo
 	return new_patch;
 }
 
-unsigned int read_byte_at (FILE *fp, unsigned long offset)
-{
-	int c;
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	c = getc(fp);
-	if (c == EOF)
-		errexit("Unexpected EOF\n");
-	return c;
-}
-
-unsigned int read_2byte_at (FILE *fp, unsigned long offset)
-{
-	unsigned char buff[2];
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(&buff, 2, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-	return (buff[1] << 8) | buff[0];
-}
-
-unsigned int read_4byte_at (FILE *fp, unsigned long offset)
-{
-	unsigned char buff[4];
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(&buff, 4, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-	return (buff[3] << 24) | (buff[2] << 16) | (buff[1] << 8) | buff[0];
-}
-
-void read_bytes_at (FILE *fp, unsigned long offset, unsigned char *buffer, int size)
-{
-	if (fseek(fp, offset, SEEK_SET)) {
-		perror(NULL);
-		exit(1);
-	}
-	if (fread(buffer, size, 1, fp) != 1) {
-		perror(NULL);
-		exit(1);
-	}
-}
-
 struct patch_struct *unlock_tre (FILE *fp, struct patch_struct *patch,
-		unsigned long base, unsigned long header)
+		off_t base, off_t header)
 {
 	unsigned int key, mloff, mlsize;
 	unsigned char encml[64]; /* at most 16 levels */
@@ -169,7 +107,7 @@ struct patch_struct *create_patch (FILE *fp)
 
 	fatstart = read_byte_at(fp, 0x40) == 0 ? 3 : read_byte_at(fp, 0x40);
 	if (read_4byte_at(fp, 0x40c) == 0) { // use root dir. assume it's the first file
-		unsigned long offset = fatstart * 512;
+		off_t offset = fatstart * 512;
 		if (read_byte_at(fp, offset) != 1 ||
 				read_byte_at(fp, offset + 0x1) != ' ' ||
 				read_byte_at(fp, offset + 0x9) != ' ')
@@ -186,7 +124,7 @@ struct patch_struct *create_patch (FILE *fp)
 	}
 
 	for (fatcount = fatstart; fatcount < fatend; fatcount ++) {
-		unsigned long offset = fatcount * 512;
+		off_t offset = fatcount * 512;
 		char subfile_name[16];
 
 		if (read_byte_at(fp, offset) != 1)
@@ -205,7 +143,7 @@ struct patch_struct *create_patch (FILE *fp)
 		if (read_byte_at(fp, offset + 0x9) == 'G' &&
 				read_byte_at(fp, offset + 0xa) == 'M' &&
 				read_byte_at(fp, offset + 0xb) == 'P') {
-			unsigned long tre_offset;
+			off_t tre_offset;
 			offset = read_2byte_at(fp, offset + 0x20) * block_size;
 			if (read_byte_at(fp, offset + 0x2) != 'G' ||
 					read_byte_at(fp, offset + 0x9) != 'G' ||
@@ -262,7 +200,7 @@ void apply_patch (FILE *fp, struct patch_struct *patch_list)
 	struct patch_struct *patch;
 
 	for (patch = patch_list; patch != NULL; patch = patch->next) {
-		if (fseek(fp, patch->offset, SEEK_SET)) {
+		if (myfseek64(fp, patch->offset)) {
 			perror(NULL);
 			return;
 		}

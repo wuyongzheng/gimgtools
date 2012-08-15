@@ -10,31 +10,14 @@ gimgxor.exe: gimgxor.c
 	$(CC) $(CFLAGS) gimgxor.c
 
 gimgunlock.exe: gimgunlock.c
-	$(CC) $(CFLAGS) gimgunlock.c
+	$(CC) $(CFLAGS) gimgunlock.c util_indep.c
 
-gimgdh.exe: gimgdh.c
-	$(CC) $(CFLAGS) gimgdh.c
-
-gimginfo.obj:
-	$(CC) $(CFLAGS) /c gimginfo.c
-
-gimglib.obj:
-	$(CC) $(CFLAGS) /c gimglib.c
-
-util.obj:
-	$(CC) $(CFLAGS) /c util.c
-
-sf_tre.obj:
-	$(CC) $(CFLAGS) /c sf_tre.c
-
-sf_typ.obj:
-	$(CC) $(CFLAGS) /c sf_typ.c
-
-sf_mps.obj:
-	$(CC) $(CFLAGS) /c sf_mps.c
+gimgch.exe: gimgch.c
+	$(CC) $(CFLAGS) gimgch.c util_indep.c
 
 clean:
 	-del /F $(OBJS) gimginfo.exe
 	-del /F gimgxor.exe gimgxor.obj
 	-del /F gimgunlock.exe gimgunlock.obj
-	-del /F gimgdh.exe gimgdh.obj
+	-del /F gimgch.exe gimgch.obj
+	-del /F util_indep.obj
