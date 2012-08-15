@@ -62,16 +62,20 @@ struct patch_struct *prepend_patch (struct patch_struct *patch_list, unsigned lo
 	return new_patch;
 }
 
-int read_byte_at (FILE *fp, unsigned long offset)
+unsigned int read_byte_at (FILE *fp, unsigned long offset)
 {
+	int c;
 	if (fseek(fp, offset, SEEK_SET)) {
 		perror(NULL);
 		exit(1);
 	}
-	return getc(fp);
+	c = getc(fp);
+	if (c == EOF)
+		errexit("Unexpected EOF\n");
+	return c;
 }
 
-int read_2byte_at (FILE *fp, unsigned long offset)
+unsigned int read_2byte_at (FILE *fp, unsigned long offset)
 {
 	unsigned char buff[2];
 	if (fseek(fp, offset, SEEK_SET)) {
@@ -85,18 +89,18 @@ int read_2byte_at (FILE *fp, unsigned long offset)
 	return (buff[1] << 8) | buff[0];
 }
 
-unsigned int read_4byte_at (FILE *fp, unsigned long offset) //FIXME: doesn't work on bigendian
+unsigned int read_4byte_at (FILE *fp, unsigned long offset)
 {
-	unsigned int n = 0;
+	unsigned char buff[4];
 	if (fseek(fp, offset, SEEK_SET)) {
 		perror(NULL);
 		exit(1);
 	}
-	if (fread(&n, 4, 1, fp) != 1) {
+	if (fread(&buff, 4, 1, fp) != 1) {
 		perror(NULL);
 		exit(1);
 	}
-	return n;
+	return (buff[3] << 24) | (buff[2] << 16) | (buff[1] << 8) | buff[0];
 }
 
 void read_bytes_at (FILE *fp, unsigned long offset, unsigned char *buffer, int size)
