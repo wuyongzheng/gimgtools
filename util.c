@@ -104,6 +104,8 @@ enum subtype get_subtype_id (const char *str) // only use 3 chars from str
 	if (memcmp(str, "LBL", 3) == 0) return ST_LBL;
 	if (memcmp(str, "NET", 3) == 0) return ST_NET;
 	if (memcmp(str, "NOD", 3) == 0) return ST_NOD;
+	if (memcmp(str, "DEM", 3) == 0) return ST_DEM;
+	if (memcmp(str, "MAR", 3) == 0) return ST_MAR;
 	if (memcmp(str, "SRT", 3) == 0) return ST_SRT;
 	if (memcmp(str, "GMP", 3) == 0) return ST_GMP;
 	if (memcmp(str, "TYP", 3) == 0) return ST_TYP;
@@ -117,7 +119,7 @@ enum subtype get_subtype_id (const char *str) // only use 3 chars from str
 const char *get_subtype_name (enum subtype id)
 {
 	const static char *type_names[] = {
-		"TRE", "RGN", "LBL", "NET", "NOD",
+		"TRE", "RGN", "LBL", "NET", "NOD", "DEM", "MAR",
 		"SRT", "GMP", "TYP", "MDR", "TRF",
 		"MPS", "QSI"};
 	return id >= ST_UNKNOWN ? NULL : type_names[id];

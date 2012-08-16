@@ -70,8 +70,8 @@ int main (int argc, char *argv[])
 		sf_offset = read_2byte_at(infp, offset + 0x20) * block_size;
 		sf_size = read_4byte_at(infp, offset + 0xc);
 		if (sf_offset == 0 || sf_size == 0)
-			errexit("subfile %s has 0 offset or size: 0x%lx 0x%lx\n",
-					sf_name, sf_offset, sf_size);
+			errexit("subfile %s has 0 offset or size: 0x%lx 0x%x\n",
+					sf_name, (unsigned long)sf_offset, (unsigned int)sf_size);
 
 		outfp = fopen(sf_name, "wb");
 		if (outfp == NULL)

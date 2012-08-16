@@ -155,7 +155,7 @@ static int parse_img (struct gimg_struct *img)
 				int k;
 
 				//vlog("fat%d: gmp 0x%x+0x%x\n", i, fat->blocks[0] * block_size, fat->size);
-				for (k = 0; k < 5; k ++) { // k matches ST_TRE to ST_NOD
+				for (k = ST_TRE; k <= ST_MAR; k ++) { // k matches ST_TRE to ST_MAR
 					uint32_t abs_offset, rel_offset = *(&gmp->tre_offset + k);
 					if (rel_offset == 0) {
 						//vlog("GMP has no %s\n", get_subtype_name(k));
@@ -266,7 +266,7 @@ static int parse_img (struct gimg_struct *img)
 				orphans_tail = orphans_tail->orphan_next = subfile;
 		} else {
 			switch (subfile->typeid) {
-			case ST_TRE: case ST_RGN: case ST_LBL: case ST_NET: case ST_NOD:
+			case ST_TRE: case ST_RGN: case ST_LBL: case ST_NET: case ST_NOD: case ST_DEM: case ST_MAR:
 				if (submap->subfiles[subfile->typeid])
 					fprintf(stderr, "Warning: file %s has duplicate %s\n", subfile->name, subfile->type);
 				submap->subfiles[subfile->typeid] = subfile;
@@ -368,7 +368,7 @@ void dump_img (struct gimg_struct *img)
 					submap->name,
 					submap->gmp->offset,
 					submap->gmp->size);
-			for (k = 0; k <= ST_NOD; k ++) {
+			for (k = 0; k <= ST_MAR; k ++) {
 				if (submap->subfiles[k])
 					printf(" %s abs=0x%x rel=0x%x\n",
 							get_subtype_name(k),
@@ -380,7 +380,7 @@ void dump_img (struct gimg_struct *img)
 		} else { // OF
 			int k;
 			printf("%s: OF\n", submap->name);
-			for (k = 0; k <= ST_NOD; k ++) {
+			for (k = 0; k <= ST_MAR; k ++) {
 				if (submap->subfiles[k])
 					printf(" %s off=0x%x size=0x%x\n",
 							get_subtype_name(k),

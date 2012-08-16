@@ -47,9 +47,9 @@ static void display_headers (int line_columns)
 	emptyid[strlen(headers[0]->id)] = '\0';
 
 	for (i = 0; i < header_num; i ++) {
-		printf("%s %8x=foff %8x=flen %4x=hoff %4x=hlen %s %s\n",
+		printf("%s %8lx=foff %8x=flen %4x=hoff %4x=hlen %s %s\n",
 				headers[i]->id,
-				headers[i]->subfile_offset,
+				(unsigned long)headers[i]->subfile_offset,
 				headers[i]->subfile_size,
 				headers[i]->header_rel_offset,
 				headers[i]->header_size,
@@ -228,10 +228,10 @@ static int read_header (const char *imgpath, const char *subfile_name_pattern,
 		}
 
 		if (strstr(sf_name, ".GMP")) {
-			static const char *exts[] = {".TRE", ".RGN", ".LBL", ".NET", ".NOD"};
-			static const int offs[] = {0x19, 0x1d, 0x21, 0x25, 0x29};
+			static const char *exts[] = {".TRE", ".RGN", ".LBL", ".NET", ".NOD", ".DEM", ".MAR"};
+			static const int offs[] = {0x19, 0x1d, 0x21, 0x25, 0x29, 0x2d, 0x31,};
 			int i;
-			for (i = 0; i < 5; i ++) {
+			for (i = 0; i < 7; i ++) {
 				char sf_new_name[16];
 				int header_rel_offset;
 				strcpy(sf_new_name, sf_name);
