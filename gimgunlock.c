@@ -241,7 +241,7 @@ int main (int argc, char *argv[])
 	printf("Writing to file.\n");
 	fp = fopen(argv[1], "rb+");
 	if (fp == NULL) {
-		printf("can't open %s\n", argv[1]);
+		printf("can't open %s for writing\n", argv[1]);
 		return 1;
 	}
 	apply_patch(fp, patch);

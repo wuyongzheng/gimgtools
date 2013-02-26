@@ -374,8 +374,6 @@ void dump_img (struct gimg_struct *img)
 							get_subtype_name(k),
 							(int)((uint8_t *)submap->subfiles[k]->header - img->base),
 							(int)((uint8_t *)submap->subfiles[k]->header - submap->subfiles[k]->base));
-				else
-					printf(" %s NIL\n", get_subtype_name(k));
 			}
 		} else { // OF
 			int k;
@@ -386,8 +384,6 @@ void dump_img (struct gimg_struct *img)
 							get_subtype_name(k),
 							submap->subfiles[k]->offset,
 							submap->subfiles[k]->size);
-				else
-					printf(" %s NIL\n", get_subtype_name(k));
 			}
 		}
 		if (submap->srt)
