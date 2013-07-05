@@ -374,6 +374,18 @@ struct garmin_nod
 	uint32_t unknown_07b;        // 0x7b
 } PACK_STRUCT ;
 
+struct garmin_dem
+{
+	struct garmin_subfile comm;
+	uint32_t flags;             // 0x015
+	uint16_t zoom_levels;       // 0x019
+	uint32_t reserved0;         // 0x01B
+	uint16_t record_size;       // 0x01F
+	uint32_t points_to_block3;  // 0x021
+	// This may not be present on every map:
+	uint32_t reserved2;         // 0x025
+} PACK_STRUCT ;
+
 struct garmin_gmp {
 	struct garmin_subfile comm;
 	uint32_t unknown_015;
@@ -382,7 +394,7 @@ struct garmin_gmp {
 	uint32_t lbl_offset;
 	uint32_t net_offset;
 	uint32_t nod_offset;
-	uint32_t unknown_02d;
+	uint32_t dem_offset;
 } PACK_STRUCT ;
 
 /* http://ati.land.cz/ */

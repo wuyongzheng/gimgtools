@@ -15,7 +15,7 @@ void dump_gmp (struct subfile_struct *sf)
 	printf("LBL Offset:  0x%x\n", header->lbl_offset);
 	printf("NET Offset:  0x%x\n", header->net_offset);
 	printf("NOD Offset:  0x%x\n", header->nod_offset);
-	printf("unknown_02d: 0x%x\n", header->unknown_02d);
+	printf("DEM Offset:  0x%x\n", header->dem_offset);
 
 	if (header->comm.hlen > sizeof(struct garmin_gmp))
 		printf("from 0x%lx to 0x%x (0x%lx bytes): %s\n",
