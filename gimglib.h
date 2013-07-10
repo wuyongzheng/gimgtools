@@ -28,6 +28,7 @@
 #endif
 
 #include "garmin_struct.h"
+#define NUMBER_SUBFILES 7
 
 enum subtype {
 	ST_TRE, ST_RGN, ST_LBL, ST_NET, ST_NOD, ST_DEM, ST_MAR, // these 7 should match the GMP header
@@ -55,7 +56,7 @@ struct subfile_struct {
 struct submap_struct {
 	char name[9];
 	union {
-		struct subfile_struct *subfiles[7];
+		struct subfile_struct *subfiles[NUMBER_SUBFILES];
 		struct {
 			struct subfile_struct *tre; // always set.
 			struct subfile_struct *rgn;
@@ -122,6 +123,12 @@ void dump_net (struct subfile_struct *sf);
 
 /* sf_nod.c */
 void dump_nod (struct subfile_struct *sf);
+
+/* sf_dem.c */
+void dump_dem (struct subfile_struct *sf);
+
+/* sf_mar.c */
+void dump_mar (struct subfile_struct *sf);
 
 /* sf_gmp.c */
 void dump_gmp (struct subfile_struct *sf);

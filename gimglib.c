@@ -155,7 +155,7 @@ static int parse_img (struct gimg_struct *img)
 				int k;
 
 				//vlog("fat%d: gmp 0x%x+0x%x\n", i, fat->blocks[0] * block_size, fat->size);
-				for (k = ST_TRE; k <= ST_MAR; k ++) { // k matches ST_TRE to ST_MAR
+				for (k = 0; k < NUMBER_SUBFILES && 0x1d + k*4 <= gmp->comm.hlen; k ++) {
 					uint32_t abs_offset, rel_offset = *(&gmp->tre_offset + k);
 					if (rel_offset == 0) {
 						//vlog("GMP has no %s\n", get_subtype_name(k));
@@ -368,7 +368,7 @@ void dump_img (struct gimg_struct *img)
 					submap->name,
 					submap->gmp->offset,
 					submap->gmp->size);
-			for (k = 0; k <= ST_MAR; k ++) {
+			for (k = 0; k < NUMBER_SUBFILES; k ++) {
 				if (submap->subfiles[k])
 					printf(" %s abs=0x%x rel=0x%x\n",
 							get_subtype_name(k),
@@ -378,7 +378,7 @@ void dump_img (struct gimg_struct *img)
 		} else { // OF
 			int k;
 			printf("%s: OF\n", submap->name);
-			for (k = 0; k <= ST_MAR; k ++) {
+			for (k = 0; k <  NUMBER_SUBFILES; k ++) {
 				if (submap->subfiles[k])
 					printf(" %s off=0x%x size=0x%x\n",
 							get_subtype_name(k),
@@ -421,6 +421,8 @@ void dump_subfile (struct gimg_struct *img, const char *subfile_name)
 		case ST_LBL: dump_lbl(subfile); break;
 		case ST_NET: dump_net(subfile); break;
 		case ST_NOD: dump_nod(subfile); break;
+		case ST_DEM: dump_dem(subfile); break;
+		case ST_MAR: dump_mar(subfile); break;
 		case ST_TYP: dump_typ(subfile); break;
 		case ST_MPS: dump_mps(subfile); break;
 		case ST_GMP: dump_gmp(subfile); break;
