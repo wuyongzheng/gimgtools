@@ -3,7 +3,7 @@
 const char *sint24_to_lat (int n)
 {
 	static char buffers[8][12];
-	static int buffer_ptr = 0;
+	static unsigned int buffer_ptr = 0;
 	char *buffer = buffers[buffer_ptr ++ % 8];
 
 	assert(n < 0x800000 && n >= -0x800000);
@@ -17,7 +17,7 @@ const char *sint24_to_lat (int n)
 const char *sint24_to_lng (int n)
 {
 	static char buffers[8][12];
-	static int buffer_ptr = 0;
+	static unsigned int buffer_ptr = 0;
 	char *buffer = buffers[buffer_ptr ++ % 8];
 
 	assert(n < 0x800000 && n >= -0x800000);
@@ -30,17 +30,16 @@ const char *sint24_to_lng (int n)
 
 const char *dump_unknown_bytes (uint8_t *bytes, int size)
 {
-	static char *buffer = NULL;
-	static int buffer_size = 0;
+	static char buffers[4][1024];
+	static unsigned int currbuf = 0;
+	char *buffer = buffers[(currbuf ++) % 4];
 	int ptr, outptr, repeat_count, repeat_byte;
 
-	if (buffer == NULL) {
-		buffer_size = size * 2 + 1 > 4096 ? size * 2 + 1 : 4096;
-		buffer = (char *)malloc(buffer_size);
-	} else if (buffer_size < size * 2 + 1) {
-		buffer_size = size * 2 + 1;
-		buffer = (char *)realloc(buffer, buffer_size);
-	}
+	if (size == 0)
+		return "";
+
+	if (size > sizeof(buffers[0]) / 2 - 2)
+		size = sizeof(buffers[0]) / 2 - 2;
 
 	for (repeat_byte = bytes[0], ptr = 1, repeat_count = 1, outptr = 0; ptr < size; ptr ++) {
 		if (bytes[ptr] == repeat_byte) {
