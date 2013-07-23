@@ -2,7 +2,11 @@
 
 static void usage (void)
 {
-	printf("Usage gimginfo [options] imgfile [subfile]\n");
+	printf("Usage:   gimginfo [options] imgfile [subfile]\n");
+	printf("Example: gimginfo america-nt-2011.img\n");
+	printf("Example: gimginfo america-nt-2011.img MAPSOURC.MPS\n");
+	printf("Example: gimginfo america-nt-2011.img I07DE4E4.TRE\n");
+	printf("Example: gimginfo america-nt-2011.img I07DE4E4.LBL\n");
 }
 
 int main (int argc, char **argv)

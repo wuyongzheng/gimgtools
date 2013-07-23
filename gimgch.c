@@ -261,8 +261,12 @@ out:
 
 static void usage (void)
 {
-	printf("Usage: gimgch [-w columns] [-m max_sf_per_img] "
+	printf("Usage:   gimgch [-w columns] [-m max_sf_per_img] "
 			"[-s subfile_name_pattern] file1.img file2.img ...\n");
+	printf("Example: gimgch -m 1 -s TRE china-chs-2012.img china-chs-76.img\n");
+	printf("         The above command compares the header of the first TRE submap in two IMG files\n");
+	printf("         gimgch -m 0 -s TRE malsingmaps.img\n");
+	printf("         The above command compares all TREs in malsingmaps.img\n");
 }
 
 int main (int argc, char *argv[])
