@@ -25,6 +25,7 @@
 # include <unistd.h>
 # include <fcntl.h>
 # include <stdint.h>
+# include <errno.h>
 #endif
 
 #include "garmin_struct.h"

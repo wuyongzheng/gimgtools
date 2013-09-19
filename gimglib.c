@@ -14,12 +14,12 @@ static int map_img (const char *path, int writable, uint8_t **pbase, unsigned in
 
 	img_fd = open(path, writable ? O_RDWR: O_RDONLY);
 	if (img_fd == -1) {
-		fprintf(stderr, "cannot open file %s\n", path);
+		fprintf(stderr, "cannot open file %s. err=%d\n", path, errno);
 		return 1;
 	}
 
 	if (fstat(img_fd, &sb) == -1) {
-		fprintf(stderr, "cannot get size of file %s\n", path);
+		fprintf(stderr, "cannot get size of file %s. err=%d\n", path, errno);
 		return 1;
 	}
 	if (sb.st_size == 0) {
@@ -31,7 +31,7 @@ static int map_img (const char *path, int writable, uint8_t **pbase, unsigned in
 	base = mmap(NULL, sb.st_size, PROT_READ | (PROT_WRITE * writable),
 			MAP_SHARED, img_fd, 0);
 	if (base == MAP_FAILED) {
-		fprintf(stderr, "cannot map file %s into memory\n", path);
+		fprintf(stderr, "cannot map file %s into memory. err=%d\n", path, errno);
 		return 1;
 	}
 
@@ -58,17 +58,17 @@ static int map_img (const char *path, int writable, uint8_t **pbase, unsigned in
 	hfile = CreateFile(path, GENERIC_READ | (GENERIC_WRITE * writable),
 			FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
-		fprintf(stderr, "cannot open file %s\n", path);
+		fprintf(stderr, "cannot open file %s. CreateFile err=%d\n", path, GetLastError());
 		return 1;
 	}
 
 	size = GetFileSize(hfile, NULL);
 	if (size == INVALID_FILE_SIZE) {
-		fprintf(stderr, "cannot get size of file %s\n", path);
+		fprintf(stderr, "cannot get size of file %s. GetFileSize err=%d\n", path, GetLastError());
 		return 1;
 	}
 	if (size == 0) {
-		fprintf(stderr, "file %s is an empty file\n", path);
+		fprintf(stderr, "file %s is an empty file.\n", path);
 		return 1;
 	}
 	//vlog("file size = %u\n", size);
@@ -77,12 +77,12 @@ static int map_img (const char *path, int writable, uint8_t **pbase, unsigned in
 			writable ? PAGE_READWRITE : PAGE_READONLY,
 			0, 0, NULL);
 	if (hmapping == NULL) {
-		fprintf(stderr, "cannot map (1) file %s into memory\n", path);
+		fprintf(stderr, "cannot map (1) file %s into memory. CreateFileMapping err=%d\n", path, GetLastError());
 		return 1;
 	}
 	base = MapViewOfFile(hmapping, writable ? FILE_MAP_WRITE : FILE_MAP_READ, 0, 0, 0);
 	if (base == NULL) {
-		fprintf(stderr, "cannot map (2) file %s into memory\n", path);
+		fprintf(stderr, "cannot map (2) file %s into memory. MapViewOfFile err=%d\n", path, GetLastError());
 		return 1;
 	}
 
