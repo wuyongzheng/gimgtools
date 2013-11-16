@@ -36,7 +36,7 @@ gimgch: gimgch.o util_indep.o
 gimgextract: gimgextract.o util_indep.o
 
 cmdc: cmdc.o
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(LDLIBS)
+	$(CC) $(CFLAGS) -o $@ $< $(LDLIBS)
 
 .PHONY: clean
 clean:
