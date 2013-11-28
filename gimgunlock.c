@@ -216,14 +216,14 @@ int main (int argc, char *argv[])
 	FILE *fp;
 	struct patch_struct *patch;
 
-	if (argc != 2) {
-		printf("usage: %s file.img\n", argv[0]);
+	if (argc != 3) {
+		printf("usage: %s <input file> <output file>\n", argv[0]);
 		return 1;
 	}
 	if (strcmp(argv[1], "-h") == 0 ||
 			strcmp(argv[1], "--help") == 0 ||
 			strcmp(argv[1], "-?") == 0) {
-		printf("usage: %s file.img\n", argv[0]);
+		printf("usage: %s <input file> <output file>\n", argv[0]);
 		return 1;
 	}
 
@@ -238,10 +238,10 @@ int main (int argc, char *argv[])
 	if (patch == NULL)
 		return 1;
 
-	printf("Writing to file.\n");
-	fp = fopen(argv[1], "rb+");
+	printf("Writing to file:%s\n", argv[2]);
+	fp = fopen(argv[2], "rb+");
 	if (fp == NULL) {
-		printf("can't open %s for writing\n", argv[1]);
+		printf("can't open %s for writing\n", argv[2]);
 		return 1;
 	}
 	apply_patch(fp, patch);
